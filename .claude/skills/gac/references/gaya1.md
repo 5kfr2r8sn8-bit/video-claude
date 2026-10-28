@@ -82,40 +82,52 @@ lembut). Rasa "krim/peach". Jangan tambah kontras kuat.
 - Dimampatkan kuat: **−14.5 LUFS, LRA 2.4 LU, puncak −1 dB**. Suara rata dan dekat.
 - Kesan bunyi: **sangat sedikit dan halus**. Contoh yang jelas: "tik" nada tinggi (±11–12 kHz) sejurus sebelum pil muncul (±63.6 s). Tiada whoosh/ding besar yang ketara. *(Keyakinan sederhana: kesan bunyi yang sangat perlahan mungkin terlepas.)*
 
-## 7. Resipi dalam GAC (yang boleh dibuat sekarang)
+## 7. Resipi dalam GAC
 
-Profil gaya (gabung dengan profil peserta; nama/CTA/perkataan kekal milik peserta):
+Semua ciri Gaya 1 kini disokong oleh `scripts/gaya.py` (dipanggil oleh build.py).
+
+Profil gaya: salin profil peserta, tukar dua nilai sahaja (nama/CTA/perkataan kekal milik peserta):
 ```json
 {"warna": "#4C7BFD", "font": "jakarta"}
 ```
-Timeline:
+Timeline (semua masa = masa video asal, seperti biasa):
 ```json
 {
-  "auto_sfx": false,
-  "subtitles": {"words": "...", "style": "minimal", "max_words": 4, "y": 1080,
-                "emphasis": ["<satu kata kunci setiap ayat>"]},
-  "segments": "potong setiap jeda > 0.12 s, tinggal 0.04 s; zoom bergilir 1.0 / 1.15 / 1.3",
+  "profile": "profile_gaya1.json",
+  "look": "warm",
+  "auto_sfx": true,
+  "subtitles": {"words": "v.words.json", "style": "type", "y": 1300, "max_words": 4,
+                "emphasis": ["satu kata kunci setiap ayat"], "italic": ["perkataan emosi"]},
+  "segments": "potong setiap jeda > 0.12 s, tinggal ±0.05 s; zoom bergilir 1.0 / 1.15 / 1.3",
+  "chapters": [[4.0, "step 1 / 3"], [25.0, "step 2 / 3"], [60.0, "step 3 / 3"], [90.0, "bonus · tips"]],
+  "chapters_total": 4,
   "elements": [
-    {"type": "title", "cover": true, "t": [0, "<hujung ayat hook>"], "lines": [[["baris kecil", "white"]], [["PERKATAAN", "gold"]]]},
-    {"type": "bigword", "t": ["<pada perkataan>", "+1.2"], "text": "install", "color": "gold"},
-    {"type": "cta", "style": "minimal", "icon": "comment", "text": "..."}
-  ],
-  "effects": [{"type": "phone", "...": "panel/screenshot bila diterangkan"}]
+    {"type": "hook2", "cover": true, "t": [0, 3.8], "kicker": [["Ramai", 0.08], ["orang", 0.8], ["ingat", 0.98]], "big": "untung?"},
+    {"type": "bigword", "style": "gaya1", "t": [10.8, 12.3], "text": "boros"},
+    {"type": "uipanel", "t": [16.0, 23.6], "title": "Bila duit dalam akaun",
+     "items": ["Nampak barang cantik", "Ada promosi", "Ada duit lebih"], "select": [[16.0, 0], [18.4, 1], [20.4, 2]]},
+    {"type": "uipanel", "t": [40, 44], "title": "Akaun GAP", "rows": [["Pembelian minimum", "RM100"]]},
+    {"type": "uipanel", "t": [50, 56], "title": "Nota", "typed": "Teks ini ditaip huruf demi huruf"},
+    {"type": "pill", "t": [26.0, 29.0], "parts": [["Siap dalam ", "n"], ["20–30 minit", "i"]]},
+    {"type": "cta", "style": "button", "t": [140, 151], "text": "Isi borang di bawah"}
+  ]
 }
 ```
-Jangan tambah `"look"` (GAC tak memanaskan warna).
+Nota:
+- `hook2.kicker`: senarai `[perkataan, masa disebut]` (ambil dari `v.words.json`). Perkataan bertukar
+  dari pudar ke penuh tepat pada masanya. `"ink": "dark"` untuk latar cerah (teks hitam macam rujukan).
+- `hook2` dan `bigword` gaya1 diletak **di belakang kepala secara automatik** (`"behind": true` lalai):
+  topeng orang (U²-Net human seg, ±176 MB, dimuat turun sekali ke `~/.cache/gac/models/`) mencari
+  atas kepala dan perkataan bertindih ±38% tingginya. Beri `"y"` untuk kedudukan sendiri,
+  `"behind": false` untuk di depan.
+- Sari kata `"style": "type"` naik sendiri ke atas panel/pil yang sedang dipapar.
+- Kesan bunyi: `tick` halus untuk perkataan gergasi/panel/pil, `click` untuk butang. Hook tiada bunyi.
+- Panel maksimum 820 px lebar (dalam zon selamat x 130–950).
+- Kata kunci dalam `uipanel.items` mengikut masa `select` (masa asal).
 
-## 8. Jurang: belum disokong GAC (perlu dibina sebelum Gaya 1 boleh ditiru penuh)
-
-1. **Sari kata taip huruf demi huruf** (gaya `minimal` sekarang muncul sekali gus).
-2. **Perkataan gergasi di belakang kepala** (perlu segmentasi orang setiap bingkai; GAC hanya ada untuk freeze frame, guna GrabCut).
-3. **Hook 2 tingkat dengan karaoke kelabu → hitam**.
-4. **Tag `step x / n` + bar kemajuan** di atas.
-5. **Panel app gelap yang slaid dari bawah** dengan teks prompt ditaip (GAC ada `phone`/`pullback`, tetapi rupanya lain).
-6. **Pil putih senget −3°** dengan kata italik serif.
-7. **Bucu viewfinder** sebelum perkataan gergasi.
-8. **Gred warna hangat-lembut** (pilihan `look` baru).
-9. **Font serif italik**.
-
-Bila pengguna minta "gaya 1", guna resipi bahagian 7, dan beritahu dengan jujur ciri mana dari
-bahagian 8 yang belum ada (atau bina dulu jika pengguna setuju).
+## 8. Had yang masih ada
+- Kad notifikasi CTA bertaip ("Dah try, siap!") dan kad logo kecil belum dibuat: guna `uipanel` dengan `typed`.
+- Kata italik dalam sari kata diletak dalam baris (rujukan kadang-kadang letak senget di bawah baris).
+- Topeng orang dibuat setiap bingkai hanya semasa elemen "behind" dipapar. Tangan yang naik ke atas
+  kepala juga akan menutup teks (sama macam rujukan).
+- Gred `warm` dibuat untuk footage biasa. Footage yang sudah kuning akan jadi lebih kuning, jadi semak bingkai.

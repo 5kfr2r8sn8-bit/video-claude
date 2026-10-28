@@ -159,3 +159,14 @@ Icons: names from the participant's `ikon/` folder, else the bundled ones in `as
 Times are original video times; an effect may span several segments. Panels (glass, chart,
 checklist, phone, pullback) hide the captions while they show; zooms keep the captions sharp
 because they act on the video only. Colours follow the profile accent.
+
+## Gaya 1 elements (scripts/gaya.py, see gaya1.md)
+| type | keys | default y |
+|---|---|---|
+| hook2 | `kicker` [[word, t], ...], `big`, `size`(230), `ink` light/dark, `behind`(true) | on the head top (auto, person mask) |
+| bigword + `"style": "gaya1"` | `text`, `size`(210), `behind`(true) - viewfinder corners, then 2-frame fade | on the head top (auto) |
+| pill | `parts` [[text, "n" or "i"(italic serif)], ...] | 1300 |
+| uipanel | `title` + `typed` / `items` + `select` [[t, index]] / `rows` [[label, value]] | 1250 |
+| cta + `"style": "button"` | `text` (orange pill) | 1420 |
+Top level: `"chapters": [[t, "step 1 / 3"], ...]`, `"chapters_total"`, `"chapters_end"`; `"look": "warm"`;
+`"subtitles": {"style": "type", "italic": [...]}` (letter-by-letter captions, rise above panels/pills).

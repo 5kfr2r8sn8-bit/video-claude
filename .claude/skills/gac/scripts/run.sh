@@ -6,7 +6,8 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 SCRIPT="$1"; shift
 PKGS='numpy pillow opencv-python-headless<5'
 [ "$SCRIPT" = transcribe.py ] && PKGS="$PKGS faster-whisper av<16"   # av 16+ breaks faster-whisper 1.2
-CHECK='import numpy, PIL, cv2'; [ "$SCRIPT" = transcribe.py ] && CHECK="$CHECK, faster_whisper"
+[ "$SCRIPT" = build.py ] && PKGS="$PKGS onnxruntime"   # Gaya 1: person mask for text behind the speaker
+CHECK='import numpy, PIL, cv2'; [ "$SCRIPT" = transcribe.py ] && CHECK="$CHECK, faster_whisper"; [ "$SCRIPT" = build.py ] && CHECK="$CHECK, onnxruntime"
 if command -v ffmpeg >/dev/null && command -v ffprobe >/dev/null && [ "$(uname)" != Darwin ]; then
   # sandbox: system Python, install what is missing (quietly, once per chat)
   python3 -c "$CHECK" 2>/dev/null || { echo "Memasang alat video (sekali sahaja)..." >&2

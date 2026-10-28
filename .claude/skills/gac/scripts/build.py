@@ -7,7 +7,7 @@ See ../references/timeline.md for the full format."""
 import sys, os, json, math, subprocess, re, shutil, tempfile
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
-sys.path.insert(0, os.path.dirname(__file__)); import sfx, doc as docmod, theme as gtheme
+sys.path.insert(0, os.path.dirname(__file__)); import sfx, doc as docmod, theme as gtheme, gaya
 
 W, H, FPS = 1080, 1920, 30
 QA_HITS = {}   # safe-zone hits found while drawing overlays: zone -> [times]
@@ -218,6 +218,8 @@ def cut(src, segs, work, enhance=True, split_box=None, doc_bg=docmod.BG, scenes=
         grade = (f"colorchannelmixer=rr={g[0]:.3f}:gg={g[1]:.3f}:bb={g[2]:.3f},hqdn3d=1.5:1.5:4:4,"
                  "eq=contrast=1.06:saturation=1.08:gamma=1.04,colorbalance=rs=-0.015:bs=0.02:rm=0.01,"
                  "curves=master='0/0.02 0.25/0.25 0.5/0.53 0.75/0.81 1/0.99',vignette=PI/8,unsharp=5:5:0.45,noise=alls=3:allf=t")
+    if look == 'warm':       # Gaya 1: warm cream/peach, low saturation, soft highlights
+        grade = gaya.warm_grade()
     if look == 'studio':     # white studio (keyed green screen): no auto-WB dimming, no vignette, a touch brighter so the wall stays white
         grade = ("hqdn3d=1.5:1.5:4:4,eq=contrast=1.03,"      # eq saturation/gamma tint a white wall green: keep to contrast only
                  "unsharp=5:5:0.4,noise=alls=2:allf=t")
@@ -558,6 +560,13 @@ def main():
     for el in TL.get('elements', []):
         ty = el['type']; s, e = N(el['t'][0]), N(el['t'][1]); el = dict(el, s=s, e=e)
         if el.get('cover'): el.update(s=0.0, pop=False, fade_in=False)   # hook used as the TikTok/Reels cover frame
+        if ty in ('hook2', 'pill', 'uipanel') or (ty, el.get('style')) in (('bigword', 'gaya1'), ('cta', 'button')):
+            # Gaya 1 elements (gaya.py): drawn fresh every frame (typing, sliding, karaoke kicker)
+            fb = face_box(f'{work}/base.mov', max(0.05, el['s'] + 0.05)) if ty in ('hook2', 'bigword') and H > W else None
+            gaya.prepare(el, N, W, H, fb[0] if fb else None); el.update(dyn=True, img=None)
+            snd = {'hook2': None, 'bigword': 'tick', 'pill': 'tick', 'uipanel': 'tick', 'cta': 'click'}[ty]
+            if auto and snd and el.get('sfx', True) is not False: sfx_ev.append((el['s'], el.get('sfx') if isinstance(el.get('sfx'), str) else snd))
+            E.append(el); continue
         if ty == 'title' and H > W and el.get('above_head', el.get('cover')):
             # fit the hook between the top UI zone and the top of the hair, measured on the cut video
             fb = face_box(f'{work}/base.mov', max(0.05, s + 0.05))
@@ -815,6 +824,19 @@ def main():
     if auto:
         sfx_ev += [(t, 'whoosh') for t in tears + whips] + [(t, 'click') for t in flashes]
     sfx_ev += [(N(t), n) for t, n in TL.get('sfx', [])]
+    # Gaya 1: accent colour, chapter tag + progress bar, person masks for "behind" elements
+    ACC = tuple(COL.get('accent', COL['gold']))[:3]
+    CH = []
+    if TL.get('chapters'):
+        chs = TL['chapters']; n_ = TL.get('chapters_total', len(chs))
+        for i, (ta, lab) in enumerate(chs):
+            tb = chs[i + 1][0] if i + 1 < len(chs) else TL.get('chapters_end', 1e9)
+            CH.append((N(ta), N(tb) if tb < 1e9 else total, lab, i, n_))
+    SEG = None
+    beh = [(el['s'], min(el['e'], total_r)) for el in E if el.get('dyn') and el.get('behind') and el['s'] < total_r]
+    if beh:
+        SEG = gaya.Seg(f'{work}/base.mov', W, H); SEG.prepare(beh)
+        print(f'person masks: {len(SEG.m)} frames', file=sys.stderr)
     # render overlay frames
     ov = f'{work}/ov'; os.makedirs(ov)
     nf = int(total_r * FPS) + 1
@@ -822,7 +844,15 @@ def main():
     for k in range(nf):
         t = k / FPS; fr = Image.new('RGBA', (W, H), (0, 0, 0, 0))
         if DOC and in_split(t): fr.alpha_composite(DOC.frame(t), (px0, py0))
+        back = None
         for el in E:
+            if el.get('dyn'):
+                lay = gaya.draw(el, t, W, H, ACC, SEG)
+                if lay is None: continue
+                if el.get('behind'):
+                    back = lay if back is None else Image.alpha_composite(back, lay)
+                else: fr.alpha_composite(lay)
+                continue
             r = env(t, el['s'], el['e'], el.get('pop', True), el.get('fade_in', True))   # "cover": true shows it fully on frame 1
             if not r: continue
             ty = el['type']; sc, al = r
@@ -869,13 +899,24 @@ def main():
             # GAC: hide only the caption groups that actually overlap a big word / panel, never a whole sentence
             # (participants read missing sentences as a bug)
             big_sents = {id(g) for g in subs if any(hides(el, g) for el in E) or any(in_scene(x) for x in np.arange(g[0], g[1], 0.1))}
+        if back is not None:   # behind the speaker: clear the person area, then everything else on top
+            back = gaya.cut_out_person(back, SEG.at(t) if SEG else None); back.alpha_composite(fr); fr = back
+        if CH:
+            chl = gaya.chapters_frame(CH, t, W, H, ACC)
+            if chl is not None: fr.alpha_composite(chl)
         cur = [g for g in subs if g[0] <= t <= g[1] + 0.3]
         big_on = any((el['type'] == 'bigword' or el.get('cover')) and el['s'] <= t <= el['e'] for el in E)   # big word / cover hook replaces the caption
         # a caption group that overlaps a big word at any moment is dropped entirely: the big word already says it,
         # and showing its leftover words for a split second after the big word looks like a glitch
         if cur and id(cur[-1]) in big_sents: big_on = True
         if cur and not (DOC and in_split(t)) and not in_scene(t) and not big_on:  # document / motion scene replace subtitles
-            fr.alpha_composite(sub_frame(cur[-1][2], t, sub_y.get(id(cur[-1]), TL['subtitles'].get('y', DY(1460))), TL['subtitles'].get('style')))
+            y_ = sub_y.get(id(cur[-1]), TL['subtitles'].get('y', DY(1460)))
+            ups = [el['_top'] for el in E if el.get('dyn') and el['type'] in ('uipanel', 'pill') and el['s'] <= t <= el['e'] and '_top' in el]
+            if ups: y_ = min(y_, min(ups) - 34)   # Gaya 1: captions sit just above a panel or pill
+            if TL['subtitles'].get('style') == 'type':   # Gaya 1: captions type themselves letter by letter
+                fr.alpha_composite(gaya.sub_frame_type(cur[-1][2], t, y_, W, H, ACC, {w.lower() for w in TL['subtitles'].get('italic', [])}))
+            else:
+                fr.alpha_composite(sub_frame(cur[-1][2], t, y_, TL['subtitles'].get('style')))
         if H > W and k % 6 == 0:   # QA: any overlay pixel in the TikTok/Reels UI zones?
             al = np.asarray(fr.getchannel('A'))
             for zn, z in (('atas', al[:220]), ('bawah', al[1500:]), ('kanan', al[700:1500, 960:])):
