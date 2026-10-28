@@ -1,0 +1,6 @@
+moviepy>=2.0
+pillow
+numpy
+pydub
+imageio-ffmpeg
+audioop-lts; python_version >= "3.13"

@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+# Fail media besar tidak di-commit
+rakaman/*
+produk/*
+sfx/*
+ikon/*
+final/*
+!*/.gitkeep
