@@ -453,12 +453,12 @@ def sub_frame(grp, t, y=1460, style=None):
     lines, line, lw = [], [], 0
     for p in parts:
         pw = p[1].getlength(p[0] + ' ')
-        if line and lw + pw > W - 140: lines.append(line); line, lw = [], 0
+        if line and lw + pw > (840 if H > W else W - 140): lines.append(line); line, lw = [], 0   # portrait: stay inside the x 120..960 safe zone
         line.append(p); lw += pw
     if line: lines.append(line)
     im = Image.new('RGBA', (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
     for li, ln in enumerate(lines):
-        tw = sum(p[1].getlength(p[0] + ' ') for p in ln); x = (W - tw) / 2; yy = y + li * 98
+        tw = sum(p[1].getlength(p[0] + ' ') for p in ln); x = (W - tw) / 2; yy = y + (li - (len(lines) - 1)) * 98   # extra lines grow upwards, away from the bottom UI
         for w, f_, col in ln:
             d.text((x, yy), w, font=f_, fill=col, stroke_width=9, stroke_fill=(0, 0, 0), anchor='ls'); x += f_.getlength(w + ' ')
     return im
