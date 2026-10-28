@@ -180,9 +180,14 @@ def viewfinder(w, h, a):
         d.line([(x, y), (x + dx * L, y)], fill=c, width=s); d.line([(x, y), (x, y + dy * L)], fill=c, width=s)
     return im
 
-def pill_img(parts, accent):
-    fs, fi = _f('sans', 54), _f('serif', 66)
-    tw = sum((fi if k == 'i' else fs).getlength(p) for p, k in parts); h = 104; w = int(tw + 70)
+def pill_img(parts, accent, max_w=820):
+    k_ = 1.0
+    while True:   # shrink long pills so they stay inside the safe width
+        fs, fi = _f('sans', 54 * k_), _f('serif', 66 * k_)
+        tw = sum((fi if k == 'i' else fs).getlength(p) for p, k in parts)
+        if tw + 70 <= max_w or k_ < 0.6: break
+        k_ -= 0.05
+    h = int(104 * max(k_, 0.8)); w = int(tw + 70)
     im = Image.new('RGBA', (w, h), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
     d.rounded_rectangle((0, 0, w - 1, h - 1), 22, fill=(255, 255, 255, 250)); x = 35
     for p, k in parts:
@@ -250,8 +255,11 @@ def hook2_img(el, t, accent):
     """Kicker line whose words switch from dim to full as they are spoken, above one giant word."""
     dark = el.get('ink', 'light') == 'dark'          # 'dark' = black text for bright backgrounds (as in the reference)
     on = INK if dark else WHITE; off = (168, 162, 158) if dark else (255, 255, 255, 120)
-    fk = _f('sans', el.get('kicker_size', 50)); words = el['_kicker']
-    tw = sum(fk.getlength(w + ' ') for w, _ in words)
+    ks = el.get('kicker_size', 50); words = el['_kicker']
+    while True:   # keep the kicker line inside the safe width
+        fk = _f('sans', ks); tw = sum(fk.getlength(w + ' ') for w, _ in words)
+        if tw <= 860 or ks <= 32: break
+        ks -= 2
     big = big_word_img(el['big'], accent if el.get('big_color', 'accent') == 'accent' else (INK if dark else WHITE), el.get('size', 230))
     w = int(max(tw, big.width)) + 40; kh = 96
     im = Image.new('RGBA', (w, kh + big.height), (0, 0, 0, 0)); d = ImageDraw.Draw(im); x = (w - tw) / 2
