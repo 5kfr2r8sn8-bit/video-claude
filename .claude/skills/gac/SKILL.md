@@ -110,6 +110,12 @@ the captions; captions hide under the panels). Offer them in the plan as "efek p
 - `digitalzoom`: slow smooth zoom to the face (`to`)
 Give each effect at least ~1.5 s; keep 1–2 effects per 15 s so the face stays the focus.
 
+## Gaya rujukan (pilihan)
+Bila peserta sebut "gaya 1" (atau "macam video rujukan tu"), baca `references/gaya1.md` dan ikut
+resipinya untuk sari kata, warna, font, rentak potongan dan bunyi. Fail itu juga menyenaraikan
+ciri yang belum disokong. Sebut dalam plan ciri mana yang tak dapat ditiru lagi.
+Gaya baru dari video rujukan lain disimpan sebagai `references/gayaN.md` dengan format yang sama.
+
 ## 5. Build
 Colour: keep the phone's **original colours** (no `"look"`, the default). iPhone HDR is converted
 automatically so it never looks washed out. Only if they ask, offer `"look": "premium"` (neutral,
