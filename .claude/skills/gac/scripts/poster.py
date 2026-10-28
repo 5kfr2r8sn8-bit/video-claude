@@ -112,7 +112,7 @@ def text3d(text, size, style, max_w):
         out = Image.new('RGBA', (w, h), (0, 0, 0, 0)); sh = Image.new('RGBA', (w, h), (0, 10, 40, 0)); sh.putalpha(m.filter(ImageFilter.GaussianBlur(6)).point(lambda v: int(v * 0.8)))
         out.alpha_composite(sh, (0, 0)); out.alpha_composite(sh, (2, 5)); face = Image.new('RGBA', (w, h), (255, 255, 255, 255)); face.putalpha(m)
         out.alpha_composite(face); return out.rotate(-2, resample=Image.BICUBIC, expand=True)
-    depth = max(8, size // 11); pad = depth + 40
+    depth = max(10, size // 7); pad = depth + 40
     m = text_mask(text, f, pad); w, h = m.size; out = Image.new('RGBA', (w, h + depth), (0, 0, 0, 0))
     if style == 'gold':
         face_stops = [(0, (255, 248, 196)), (0.45, (255, 214, 92)), (0.75, (240, 168, 38)), (1, (196, 118, 18))]
@@ -129,6 +129,8 @@ def text3d(text, size, style, max_w):
         t = k / depth; col = tuple(int(a + (b - a) * t) for a, b in zip(side_a, side_b))
         lay = Image.new('RGBA', (w, h), col + (255,)); lay.putalpha(m); out.alpha_composite(lay, (0, k))
     edge = Image.new('RGBA', (w, h), rim + (255,)); edge.putalpha(m.filter(ImageFilter.MaxFilter(5))); out.alpha_composite(edge)
+    if style == 'gold':
+        face_stops = [(0, (255, 252, 220)), (0.3, (255, 226, 120)), (0.5, (255, 200, 60)), (0.52, (236, 160, 30)), (1, (255, 206, 90))]
     face = vgrad((w, h), face_stops); face.putalpha(m); out.alpha_composite(face)
     hi = Image.new('RGBA', (w, h), (255, 255, 255, 0))   # thin bright bevel along the top of each letter
     bev = Image.fromarray(np.clip(np.asarray(m, np.int16) - np.asarray(m.transform(m.size, Image.AFFINE, (1, 0, 0, 0, 1, 4)), np.int16), 0, 255).astype(np.uint8))
@@ -154,6 +156,13 @@ def main():
     W, H = spec.get('size', [1080, 1350]); bgk = spec.get('background', 'sky')
     if bgk == 'sky': img = bg_sky(W, H); bokeh(img)
     elif bgk == 'gold': img = bg_gold(W, H); bokeh(img)
+    elif bgk == 'own':   # the participant's own photo, blurred into bokeh, darker at the top for the headline
+        src = ImageOps.exif_transpose(Image.open(P(spec['photo']))).convert('RGB')
+        img = ImageOps.fit(src, (W, H)).filter(ImageFilter.GaussianBlur(spec.get('blur', 28))).convert('RGBA')
+        y_ = np.linspace(0, 1, H)[:, None]; a = (0.72 * (1 - y_ / 0.6).clip(0, 1) + 0.18).clip(0, 1)
+        shade = Image.fromarray((np.repeat(a, W, axis=1) * 255).astype(np.uint8))
+        dk = Image.new('RGBA', (W, H), tuple(spec.get('shade', [28, 16, 4])) + (255,)); dk.putalpha(shade); img.alpha_composite(dk)
+        bokeh(img, 60)
     else: img = ImageOps.fit(Image.open(P(bgk)).convert('RGBA'), (W, H))
     # headline first (to know where it ends), then the person fitted between the headline and the floor
     texts, y, ys = [], spec.get('top', 70), []
@@ -164,12 +173,15 @@ def main():
     if spec.get('photo'):
         p = cut_person(P(spec['photo'])); floor = int(H * spec.get('floor', 0.955))
         ph = min(int(H * spec.get('person_h', 0.7)), floor - text_bottom + int(H * spec.get('overlap', 0.0)))
+        if spec.get('crop_bottom'):   # poster crop: the person is scaled up from the head and runs off the bottom edge
+            ph = int(H * spec['crop_bottom']); floor = text_bottom - int(H * spec.get('overlap', 0.0)) + ph
         p = p.resize((int(p.width * ph / p.height), ph), Image.LANCZOS)
         pg, pad = person_glow(p); x = int(W * spec.get('person_x', 0.5) - pg.width / 2); y0 = floor - ph - pad
         sh = Image.new('L', (W, H), 0); fy = floor
         ImageDraw.Draw(sh).ellipse((x + pad - 40, fy - 30, x + pad + p.width + 40, fy + 26), fill=210)
         shl = Image.new('RGBA', (W, H), (0, 0, 10, 255)); shl.putalpha(sh.filter(ImageFilter.GaussianBlur(16)))
-        img.alpha_composite(shl); img.alpha_composite(pg, (x, y0))
+        if not spec.get('crop_bottom'): img.alpha_composite(shl)
+        img.alpha_composite(pg, (x, y0))
     for t, y in zip(texts, ys):
         img.alpha_composite(t, (int((W - t.width) / 2), int(y - 30)))
     img.convert('RGB').save(out_path, quality=95)
