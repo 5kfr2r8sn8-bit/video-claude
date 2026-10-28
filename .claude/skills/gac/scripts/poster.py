@@ -104,44 +104,95 @@ def sparkle(d, x, y, r, a=255):
                    (x, y + rr * 2.2), (x - rr * 0.28, y + rr * 0.28), (x - rr * 2.2, y), (x - rr * 0.28, y - rr * 0.28)], fill=(255, 250, 225, al))
     d.ellipse((x - r * 0.5, y - r * 0.5, x + r * 0.5, y + r * 0.5), fill=(255, 255, 255, a))
 
-def text3d(text, size, style, max_w):
-    f = font(size)
-    while f.getlength(text) > max_w and size > 40: size -= 4; f = font(size)
+POPPINS = os.path.join(HERE, '..', 'assets', 'fonts', 'Poppins-Black.ttf')
+
+def line_mask(text, size, track=-0.035, pad=60):
+    """Heavy headline mask: Poppins Black with tight tracking (letters almost touching, as in thumbnail posters)."""
+    f = ImageFont.truetype(POPPINS, int(size)); tr = track * size
+    w = int(sum(f.getlength(c) + tr for c in text) + pad * 2); asc, desc = f.getmetrics(); h = asc + desc + pad * 2
+    m = Image.new('L', (w, h), 0); d = ImageDraw.Draw(m); x = pad
+    for c in text: d.text((x, pad), c, font=f, fill=255); x += f.getlength(c) + tr
+    return m.crop(m.getbbox()), f
+
+def emboss(m, size, soft=0.05):
+    """Lighting (0..1) of a pillow-shaped surface built from the letter mask; light from the top-left."""
+    hgt = np.asarray(m.filter(ImageFilter.GaussianBlur(max(2, size * soft))), np.float32) / 255.0
+    gy, gx = np.gradient(hgt); k = 9.0
+    nx, ny, nz = -gx * k, -gy * k, np.ones_like(hgt); n = np.sqrt(nx ** 2 + ny ** 2 + nz ** 2)
+    L = np.array([-0.45, -0.65, 0.62]); L = L / np.linalg.norm(L)
+    return np.clip((nx * L[0] + ny * L[1] + nz * L[2]) / n, 0, 1)
+
+PAL = {
+    'gold':  dict(face=[(0, (255, 236, 120)), (0.35, (255, 206, 30)), (0.7, (244, 150, 0)), (1, (255, 186, 20))],
+                  side=((196, 110, 0), (110, 52, 0)), rim=(132, 66, 0), spec=(255, 250, 210), lit=(0.62, 0.55)),
+    'white': dict(face=[(0, (255, 255, 255)), (0.6, (246, 248, 252)), (1, (214, 222, 236))],
+                  side=((176, 188, 214), (104, 116, 150)), rim=(78, 88, 120), spec=(255, 255, 255), lit=(0.93, 0.1)),
+}
+
+def text3d(text, size, style, max_w, target_w=None):
     if style == 'sub':
-        m = text_mask(text, font(size, 'ExtraBold'), 30); w, h = m.size
-        out = Image.new('RGBA', (w, h), (0, 0, 0, 0)); sh = Image.new('RGBA', (w, h), (0, 10, 40, 0)); sh.putalpha(m.filter(ImageFilter.GaussianBlur(6)).point(lambda v: int(v * 0.8)))
-        out.alpha_composite(sh, (0, 0)); out.alpha_composite(sh, (2, 5)); face = Image.new('RGBA', (w, h), (255, 255, 255, 255)); face.putalpha(m)
-        out.alpha_composite(face); return out.rotate(-2, resample=Image.BICUBIC, expand=True)
-    depth = max(10, size // 7); pad = depth + 40
-    m = text_mask(text, f, pad); w, h = m.size; out = Image.new('RGBA', (w, h + depth), (0, 0, 0, 0))
+        m, f = line_mask(text, size, track=-0.01, pad=30)
+        while m.width > max_w * 0.8 and size > 30: size -= 2; m, f = line_mask(text, size, track=-0.01, pad=30)
+        w, h = m.size; P = 24; out = Image.new('RGBA', (w + P * 2, h + P * 2), (0, 0, 0, 0)); mm = Image.new('L', out.size, 0); mm.paste(m, (P, P))
+        sh = Image.new('RGBA', out.size, (0, 8, 40, 0)); sh.putalpha(mm.filter(ImageFilter.MaxFilter(7)).filter(ImageFilter.GaussianBlur(4)))
+        out.alpha_composite(sh, (0, 0)); out.alpha_composite(sh, (3, 6))
+        face = Image.new('RGBA', out.size, (255, 255, 255, 255)); face.putalpha(mm); out.alpha_composite(face)
+        return out.rotate(3, resample=Image.BICUBIC, expand=True)
+    m, f = line_mask(text, size)
+    if target_w:   # fit the line to a target width (thumbnail look: every line spans the frame)
+        size = size * target_w / m.width; m, f = line_mask(text, size)
+    while m.width > max_w and size > 40: size -= 4; m, f = line_mask(text, size)
+    pal = PAL['gold' if style == 'gold' else 'white']
+    depth = int(size * 0.13); dx = 0.42; P = depth + 50
+    w, h = m.size; W2, H2 = w + P * 2, h + P * 2
+    M = Image.new('L', (W2, H2), 0); M.paste(m, (P - depth // 3, P - depth // 2)); ox, oy = P - depth // 3, P - depth // 2
+    out = Image.new('RGBA', (W2, H2), (0, 0, 0, 0))
+    sm = Image.new('L', (W2, H2), 0); sm.paste(m, (int(ox + depth * 0.9), int(oy + depth * 1.5)))   # drop shadow
+    sh = Image.new('RGBA', (W2, H2), (0, 4, 24, 0)); sh.putalpha(sm.filter(ImageFilter.GaussianBlur(size * 0.07)).point(lambda v: int(v * 0.7)))
+    out.alpha_composite(sh)
     if style == 'gold':
-        face_stops = [(0, (255, 248, 196)), (0.45, (255, 214, 92)), (0.75, (240, 168, 38)), (1, (196, 118, 18))]
-        side_a, side_b, rim = (150, 88, 14), (92, 50, 6), (110, 62, 8)
-    else:
-        face_stops = [(0, (255, 255, 255)), (0.6, (246, 248, 252)), (1, (206, 214, 228))]
-        side_a, side_b, rim = (170, 180, 200), (96, 106, 130), (70, 80, 104)
-    shadow = Image.new('RGBA', out.size, (0, 6, 30, 0)); sm = Image.new('L', out.size, 0); sm.paste(m, (8, depth + 12))
-    shadow.putalpha(sm.filter(ImageFilter.GaussianBlur(14)).point(lambda v: int(v * 0.75))); out.alpha_composite(shadow)
-    if style == 'gold':   # warm glow around the gold word
-        gl = Image.new('RGBA', out.size, (255, 196, 70, 0)); gm = Image.new('L', out.size, 0); gm.paste(m, (0, depth // 2))
-        gl.putalpha(gm.filter(ImageFilter.GaussianBlur(26)).point(lambda v: int(v * 0.65))); out.alpha_composite(gl)
-    for k in range(depth, 0, -1):   # extrusion, darker towards the back
-        t = k / depth; col = tuple(int(a + (b - a) * t) for a, b in zip(side_a, side_b))
-        lay = Image.new('RGBA', (w, h), col + (255,)); lay.putalpha(m); out.alpha_composite(lay, (0, k))
-    edge = Image.new('RGBA', (w, h), rim + (255,)); edge.putalpha(m.filter(ImageFilter.MaxFilter(5))); out.alpha_composite(edge)
+        gl = Image.new('RGBA', (W2, H2), (255, 190, 60, 0)); gl.putalpha(M.filter(ImageFilter.GaussianBlur(size * 0.18)).point(lambda v: int(v * 0.55)))
+        out.alpha_composite(gl)
+    (a0, a1) = pal['side']
+    for k in range(depth, 0, -1):   # extrusion towards the bottom-right, lit side lighter
+        t = k / depth; col = tuple(int(a + (b - a) * t) for a, b in zip(a0, a1))
+        lay = Image.new('RGBA', (w, h), col + (255,)); lay.putalpha(m); out.alpha_composite(lay, (int(ox + k * dx), int(oy + k)))
+    edge = Image.new('RGBA', (W2, H2), pal['rim'] + (255,)); edge.putalpha(M.filter(ImageFilter.MaxFilter(3))); out.alpha_composite(edge)
+    light = emboss(m, size, 0.05 if style == 'gold' else 0.022)
+    base = np.asarray(vgrad((w, h), pal['face']).convert('RGB'), np.float32)
+    col = base * (pal['lit'][0] + pal['lit'][1] * light[..., None]) + np.array(pal['spec']) * (light[..., None] ** 14) * 0.85
+    face = Image.fromarray(np.clip(col, 0, 255).astype(np.uint8), 'RGB').convert('RGBA'); face.putalpha(m.filter(ImageFilter.MinFilter(3)))
+    out.alpha_composite(face, (ox, oy))
     if style == 'gold':
-        face_stops = [(0, (255, 252, 220)), (0.3, (255, 226, 120)), (0.5, (255, 200, 60)), (0.52, (236, 160, 30)), (1, (255, 206, 90))]
-    face = vgrad((w, h), face_stops); face.putalpha(m); out.alpha_composite(face)
-    hi = Image.new('RGBA', (w, h), (255, 255, 255, 0))   # thin bright bevel along the top of each letter
-    bev = Image.fromarray(np.clip(np.asarray(m, np.int16) - np.asarray(m.transform(m.size, Image.AFFINE, (1, 0, 0, 0, 1, 4)), np.int16), 0, 255).astype(np.uint8))
-    hi.putalpha(bev.filter(ImageFilter.GaussianBlur(1)).point(lambda v: int(v * 0.8))); out.alpha_composite(hi)
-    if style == 'gold':
-        d = ImageDraw.Draw(out); rnd = random.Random(len(text))
-        bb = m.getbbox()
-        for x, y, r in ((bb[0] + 10, bb[1] + (bb[3] - bb[1]) * 0.55, 13), (bb[2] - 6, bb[1] + (bb[3] - bb[1]) * 0.3, 15),
-                        (bb[0] + (bb[2] - bb[0]) * 0.42, bb[1] + 6, 9), (bb[0] + (bb[2] - bb[0]) * 0.8, bb[3] - 10, 8)):
-            sparkle(d, x, y, r)
-    return out
+        d = ImageDraw.Draw(out); bb = M.getbbox()
+        for fx, fy, r in ((0.03, 0.6, 24), (0.97, 0.15, 28), (0.42, 0.05, 16), (0.8, 0.95, 14), (0.62, 0.5, 9)):
+            x, y = bb[0] + (bb[2] - bb[0]) * fx, bb[1] + (bb[3] - bb[1]) * fy; flare(out, x, y, r)
+    return out.rotate(2, resample=Image.BICUBIC, expand=True)
+
+def flare(img, x, y, r):
+    """Lens-flare glint: soft glow, long thin horizontal streak, 4-point star."""
+    lay = Image.new('RGBA', img.size, (0, 0, 0, 0)); d = ImageDraw.Draw(lay)
+    d.ellipse((x - r * 2.2, y - r * 2.2, x + r * 2.2, y + r * 2.2), fill=(255, 210, 120, 120))
+    lay = lay.filter(ImageFilter.GaussianBlur(r)); d = ImageDraw.Draw(lay)
+    d.line([(x - r * 7, y), (x + r * 7, y)], fill=(255, 236, 190, 150), width=max(2, r // 6))
+    sparkle(d, x, y, r * 0.75); img.alpha_composite(lay)
+
+def sticker(p, border=16, vivid=True):
+    """Person as a sticker: punchy colours, thick white outline, soft drop shadow."""
+    from PIL import ImageEnhance
+    if vivid:
+        a = p.getchannel('A'); rgb = p.convert('RGB')
+        rgb = ImageEnhance.Color(rgb).enhance(1.35); rgb = ImageEnhance.Contrast(rgb).enhance(1.15)
+        rgb = ImageEnhance.Sharpness(rgb).enhance(1.8); rgb = ImageEnhance.Brightness(rgb).enhance(1.04)
+        p = rgb.convert('RGBA'); p.putalpha(a)
+    pad = border * 3; W2, H2 = p.width + pad * 2, p.height + pad * 2
+    a = Image.new('L', (W2, H2), 0); a.paste(p.getchannel('A').point(lambda v: 255 if v > 110 else 0), (pad, pad))
+    ring = a.filter(ImageFilter.MaxFilter(border * 2 + 1)).filter(ImageFilter.GaussianBlur(1.5)).point(lambda v: 255 if v > 127 else 0)
+    out = Image.new('RGBA', (W2, H2), (0, 0, 0, 0))
+    sh = Image.new('RGBA', (W2, H2), (0, 6, 30, 0)); sh.putalpha(ring.filter(ImageFilter.GaussianBlur(14)).point(lambda v: int(v * 0.6)))
+    out.alpha_composite(sh, (6, 14))
+    wh = Image.new('RGBA', (W2, H2), (255, 255, 255, 255)); wh.putalpha(ring.filter(ImageFilter.GaussianBlur(0.8))); out.alpha_composite(wh)
+    out.alpha_composite(p, (pad, pad)); return out, pad
 
 def person_glow(p):
     """Soft white halo around the person, like a rim light."""
@@ -167,8 +218,9 @@ def main():
     # headline first (to know where it ends), then the person fitted between the headline and the floor
     texts, y, ys = [], spec.get('top', 70), []
     for ln in spec['lines']:
-        t = text3d(ln['text'], ln.get('size', 150), ln.get('style', 'white'), W - 90)
-        texts.append(t); ys.append(y); y += t.height - ln.get('tight', int(t.height * 0.34))
+        t = text3d(ln['text'], ln.get('size', 150), ln.get('style', 'white'), W - 60, W * ln['width'] if ln.get('width') else None)
+        t = t.crop(t.getchannel('A').point(lambda v: 255 if v > 20 else 0).getbbox())
+        texts.append(t); ys.append(y + 30); y += t.height - int(t.height * ln.get('overlap', 0.16))
     text_bottom = ys[-1] - 30 + texts[-1].height - 20
     if spec.get('photo'):
         p = cut_person(P(spec['photo'])); floor = int(H * spec.get('floor', 0.955))
@@ -176,7 +228,8 @@ def main():
         if spec.get('crop_bottom'):   # poster crop: the person is scaled up from the head and runs off the bottom edge
             ph = int(H * spec['crop_bottom']); floor = text_bottom - int(H * spec.get('overlap', 0.0)) + ph
         p = p.resize((int(p.width * ph / p.height), ph), Image.LANCZOS)
-        pg, pad = person_glow(p); x = int(W * spec.get('person_x', 0.5) - pg.width / 2); y0 = floor - ph - pad
+        pg, pad = (sticker(p, spec.get('border', 16)) if spec.get('look', 'sticker') == 'sticker' else person_glow(p))
+        x = int(W * spec.get('person_x', 0.5) - pg.width / 2); y0 = floor - ph - pad
         sh = Image.new('L', (W, H), 0); fy = floor
         ImageDraw.Draw(sh).ellipse((x + pad - 40, fy - 30, x + pad + p.width + 40, fy + 26), fill=210)
         shl = Image.new('RGBA', (W, H), (0, 0, 10, 255)); shl.putalpha(sh.filter(ImageFilter.GaussianBlur(16)))
