@@ -7,7 +7,7 @@ See ../references/timeline.md for the full format."""
 import sys, os, json, math, subprocess, re, shutil, tempfile
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
-sys.path.insert(0, os.path.dirname(__file__)); import sfx, doc as docmod, theme as gtheme, gaya
+sys.path.insert(0, os.path.dirname(__file__)); import sfx, doc as docmod, theme as gtheme, gaya, mewah
 
 W, H, FPS = 1080, 1920, 30
 QA_HITS = {}   # safe-zone hits found while drawing overlays: zone -> [times]
@@ -560,6 +560,12 @@ def main():
     for el in TL.get('elements', []):
         ty = el['type']; s, e = N(el['t'][0]), N(el['t'][1]); el = dict(el, s=s, e=e)
         if el.get('cover'): el.update(s=0.0, pop=False, fade_in=False)   # hook used as the TikTok/Reels cover frame
+        if ty in mewah.TYPES:   # Gaya Mewah Emas (mewah.py)
+            mewah.prepare(el, N); el.update(dyn=True, img=None, mewah=True)
+            snd = {'mtitle': None, 'mword': 'shimmer', 'mstep': 'whoosh', 'mpanel': 'pop', 'mcta': 'coin'}[ty]
+            if auto and snd and el.get('sfx', True) is not False: sfx_ev.append((el['s'], el.get('sfx') if isinstance(el.get('sfx'), str) else snd))
+            if ty == 'mpanel' and auto: sfx_ev += [(a, 'pop') for a in el['_at'][1:]]
+            E.append(el); continue
         if ty in ('hook2', 'pill', 'uipanel') or (ty, el.get('style')) in (('bigword', 'gaya1'), ('cta', 'button')):
             # Gaya 1 elements (gaya.py): drawn fresh every frame (typing, sliding, karaoke kicker)
             fb = face_box(f'{work}/base.mov', max(0.05, el['s'] + 0.05)) if ty in ('hook2', 'bigword') and H > W else None
@@ -847,7 +853,7 @@ def main():
         back = None
         for el in E:
             if el.get('dyn'):
-                lay = gaya.draw(el, t, W, H, ACC, SEG)
+                lay = mewah.draw(el, t, W, H) if el.get('mewah') else gaya.draw(el, t, W, H, ACC, SEG)
                 if lay is None: continue
                 if el.get('behind'):
                     back = lay if back is None else Image.alpha_composite(back, lay)
@@ -905,7 +911,7 @@ def main():
             chl = gaya.chapters_frame(CH, t, W, H, ACC)
             if chl is not None: fr.alpha_composite(chl)
         cur = [g for g in subs if g[0] <= t <= g[1] + 0.3]
-        big_on = any((el['type'] == 'bigword' or el.get('cover')) and el['s'] <= t <= el['e'] for el in E)   # big word / cover hook replaces the caption
+        big_on = any((el['type'] in ('bigword', 'mword') or el.get('cover')) and el['s'] <= t <= el['e'] for el in E)   # big word / cover hook replaces the caption
         # a caption group that overlaps a big word at any moment is dropped entirely: the big word already says it,
         # and showing its leftover words for a split second after the big word looks like a glitch
         if cur and id(cur[-1]) in big_sents: big_on = True
@@ -913,7 +919,9 @@ def main():
             y_ = sub_y.get(id(cur[-1]), TL['subtitles'].get('y', DY(1460)))
             ups = [el['_top'] for el in E if el.get('dyn') and el['type'] in ('uipanel', 'pill') and el['s'] <= t <= el['e'] and '_top' in el]
             if ups: y_ = min(y_, min(ups) - 34)   # Gaya 1: captions sit just above a panel or pill
-            if TL['subtitles'].get('style') == 'type':   # Gaya 1: captions type themselves letter by letter
+            if TL['subtitles'].get('style') == 'mewah':   # Gaya Mewah Emas: navy pill caption
+                fr.alpha_composite(mewah.sub_frame(cur[-1][2], t, y_, W, H))
+            elif TL['subtitles'].get('style') == 'type':   # Gaya 1: captions type themselves letter by letter
                 fr.alpha_composite(gaya.sub_frame_type(cur[-1][2], t, y_, W, H, ACC, {w.lower() for w in TL['subtitles'].get('italic', [])}))
             else:
                 fr.alpha_composite(sub_frame(cur[-1][2], t, y_, TL['subtitles'].get('style')))
