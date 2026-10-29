@@ -96,6 +96,10 @@ Skrip: `scripts/gaya2_hf.py` menjana komposisi HyperFrames (HTML + GSAP) daripad
    - `note`: baris penafian kecil (cth "Prestasi lalu bukan jaminan masa depan").
    - Video tak tajam? Dalam pemotong guna `scale ...:flags=lanczos`, `unsharp=5:5:0.9:3:3:0`, `-crf 10`,
      dan render `-q delivery`.
+   - Video kelam / kebiruan? Tambah dalam pemotong: `eq=gamma=1.18:brightness=0.03:contrast=1.06:saturation=1.08,
+     curves=all='0/0 0.5/0.56 1/1',colorbalance=rm=0.03:bm=-0.03:rh=0.02:bh=-0.02` (Rakaman3: muka 86 → 118).
+   - Untuk telefon / TikTok: fail render (±19 Mbps, moov di hujung) kadang beku di telefon. Encode semula:
+     `-crf 19 -maxrate 8M -bufsize 16M -profile:v high -level 4.1 -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart`.
 4. `python3 scripts/gaya2_hf.py spec.json PROJECT` → index.html + assets/sfx.wav.
 5. Salin `gsap.min.js` (npm gsap@3.14.2; CDN disekat), `Inter.ttf`, `JetBrainsMono-Bold.ttf` ke `PROJECT/assets/`.
 6. `npx hyperframes lint .` → `npx hyperframes snapshot --at ...` (lihat bingkai) → `npx hyperframes render -o out.mp4`.
