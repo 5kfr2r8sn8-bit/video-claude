@@ -116,6 +116,11 @@ resipinya untuk sari kata, warna, font, rentak potongan dan bunyi. Fail itu juga
 ciri yang belum disokong. Sebut dalam plan ciri mana yang tak dapat ditiru lagi.
 Gaya baru dari video rujukan lain disimpan sebagai `references/gayaN.md` dengan format yang sama.
 
+## Slaid gambar / carousel
+Bila peserta beri carousel contoh dan minta "ikut sebijik, tukar gambar saya": baca
+`references/carousel.md` dan guna `scripts/carousel.py` (contoh pelan: `references/carousel_contoh.json`).
+Buat sendiri, jangan suruh peserta guna AI lain.
+
 ## 5. Build
 Colour: keep the phone's **original colours** (no `"look"`, the default). iPhone HDR is converted
 automatically so it never looks washed out. Only if they ask, offer `"look": "premium"` (neutral,
