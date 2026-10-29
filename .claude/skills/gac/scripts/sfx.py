@@ -128,10 +128,50 @@ def write(path, x):
     x = np.clip(x, -1, 1); y = (x * 32767).astype('<i2')
     with wave.open(path, 'wb') as w:
         w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR); w.writeframes(y.tobytes())
-def render_track(events, total, path, gain_db=-14):
-    """events: list of (time_sec, name). Writes one mono wav covering the whole video."""
+def _mf(m): return 440 * 2 ** ((m - 69) / 12)
+def music_bed(total, bpm=96):
+    """Soft synthesised lo-fi bed (no downloads, no copyright): warm pad chords Fmaj7-Am7-Dm7-Cmaj7,
+    round bass, gentle plucked arpeggio, light kick + hat. Peak ~0.5, mixed far below the voice."""
+    beat = 60 / bpm; bar = 4 * beat; n = int(SR * (total + 1)); out = np.zeros(n)
+    chords = [[53, 57, 60, 64], [57, 60, 64, 67], [50, 53, 57, 60], [48, 52, 55, 59]]
+    t_bar = _t(bar); pad_env = np.minimum(1, t_bar / 0.4) * np.minimum(1, (bar - t_bar) / 0.3)
+    k = 0; b0 = 0.0
+    while b0 < total + 1:
+        ch = chords[k % 4]; s0 = int(SR * b0); seg = np.zeros(len(t_bar))
+        for m in ch:                                   # pad: soft triangle-ish, slightly detuned
+            f = _mf(m)
+            for det in (-0.12, 0.12):
+                seg += 0.05 * (np.sin(2 * np.pi * (f + det) * t_bar) + 0.12 * np.sin(6 * np.pi * (f + det) * t_bar))
+        seg *= pad_env
+        bass = np.zeros(len(t_bar))                    # bass on beats 1 and 3
+        for bt in (0, 2):
+            i = int(SR * bt * beat); tt = t_bar[:len(t_bar) - i]
+            bass[i:] += 0.22 * np.sin(2 * np.pi * _mf(ch[0] - 12) * tt) * np.exp(-tt / 0.5) * np.minimum(1, tt / 0.01)
+        arp = np.zeros(len(t_bar)); notes = ch + [ch[1] + 12, ch[2] + 12, ch[3], ch[1]]
+        for j, m in enumerate(notes):                  # eighth-note pluck arpeggio
+            i = int(SR * j * beat / 2); tt = t_bar[:len(t_bar) - i]
+            arp[i:] += 0.07 * np.sin(2 * np.pi * _mf(m + 12) * tt) * np.exp(-tt / 0.18) * np.minimum(1, tt / 0.003)
+        drums = np.zeros(len(t_bar))
+        for bt in range(4):
+            i = int(SR * bt * beat)
+            if bt in (0, 2):                           # soft kick
+                tt = t_bar[:int(SR * 0.25)]; f = 110 * np.exp(-tt * 30) + 48
+                kk = 0.35 * np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-tt / 0.09); drums[i:i + len(kk)] += kk[:len(drums) - i]
+            j = int(SR * (bt + 0.5) * beat); hn = int(SR * 0.04)   # off-beat hat
+            if j + hn < len(drums):
+                h = np.random.randn(hn); h = h - _lp(h, 4); drums[j:j + hn] += 0.05 * h * np.exp(-np.arange(hn) / (SR * 0.01))
+        seg = seg + bass + arp + drums
+        e = min(n, s0 + len(seg)); out[s0:e] += seg[:e - s0]
+        b0 += bar; k += 1
+    fade = np.ones(n); fi = int(SR * 1.0); fo = int(SR * 2.0); end = int(SR * total)
+    fade[:fi] = np.linspace(0, 1, fi); fade[max(0, end - fo):end] = np.linspace(1, 0, end - max(0, end - fo)); fade[end:] = 0
+    return _verb(out * fade, 0.5, 0.25)[:n]
+def render_track(events, total, path, gain_db=-14, music_db=None):
+    """events: list of (time_sec, name) or (time_sec, name, extra_db). Writes one mono wav covering the
+    whole video. music_db: add the soft music bed at this level (e.g. -27), relative to full scale."""
     np.random.seed(3); out = np.zeros(int(SR * (total + 1)))
-    for t, name in events:
+    for ev in events:
+        t, name = ev[0], ev[1]; g = 10 ** ((ev[2] if len(ev) > 2 else 0) / 20)
         ff = from_file(name)
         if ff is None and name not in LIB: continue
         if ff is not None:   # user's own sound file; risers land their cut-off on the moment
@@ -139,9 +179,11 @@ def render_track(events, total, path, gain_db=-14):
             if name in ('riser', 'swell'):
                 s -= hit
                 if s < 0: x = x[-s:]; s = 0
-            e = min(len(out), s + len(x)); out[s:e] += x[:e - s] * 10 ** (6 / 20); continue
+            e = min(len(out), s + len(x)); out[s:e] += x[:e - s] * 10 ** (6 / 20) * g; continue
         x = LIB[name](); s = int(SR * max(0, t))
         if name in ('riser', 'swell'): s = max(0, s - len(x) + (int(SR * 0.3) if name == 'swell' else 0))  # risers end on the moment
         if name == 'hit': s = max(0, s - int(SR * 0.12))  # the thud lands on the moment, its whoosh just before
-        e = min(len(out), s + len(x)); out[s:e] += x[:e - s]
-    out *= 10 ** (gain_db / 20); write(path, out[:int(SR * total)])
+        e = min(len(out), s + len(x)); out[s:e] += x[:e - s] * g
+    out *= 10 ** (gain_db / 20)
+    if music_db is not None: out += music_bed(total) * 10 ** (music_db / 20)
+    write(path, out[:int(SR * total)])

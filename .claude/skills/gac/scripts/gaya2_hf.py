@@ -9,7 +9,10 @@ spec = {
   "panel": {"top": 250, "bottom": 550},           # band above the head (never over the face)
   "scenes": [ {"t": [start, end], "kind": ..., ...}, ... ],   # times on the CUT video
   "flashback": [[start, end, "3 YEARS AGO", "2023"]],          # optional film-strip flashback
-  "sfx_gain_db": -14
+  "sfx_gain_db": -14,
+  "sfx": "rich" | "minimal",   # rich (default): a sound on every change / item, see rich_sfx()
+  "cuts": [6.1, 12.4],         # optional jump-cut times (cut video) for a light whoosh
+  "music_db": -30              # optional soft synthesised music bed under the voice
 }
 Scene kinds (all drawn inside ONE frosted panel above the head; the content cross-fades):
   odometer  {"label": "THE YEAR OF", "text": "2026", "sub": "AGENTIC", "key": "AI"}   characters roll in one by one
@@ -148,6 +151,43 @@ def scene_js(i, s):
         L.append(f'tl.fromTo("{sid} .ctapill", {{scale: 0.6}}, {{scale: 1, duration: 0.3, ease: "back.out(3)"}}, {a});')
     return '\n      '.join(L)
 
+def rich_sfx(sc, spec):
+    """Full sound design (default): a swoosh on every panel change, a sound for every item as it lands
+    (on the same times as the animation), rolling ticks on odometers, a boom on the hook, gold shimmer
+    on gold moments, a soft whoosh on zoom jump cuts ("cuts": [times]). Events: (time, name, extra_db)."""
+    ev = []
+    for i, s in enumerate(sc):
+        a, b = s['t']; k = s['kind']; at = s.get('at') or []
+        if i == 0: ev += [(a, 'boom', -1)]
+        else: ev += [(a - 0.06, 'swoosh', -5)]
+        if k == 'odometer':
+            chars = [c for c in range(len(s['text'])) if s['text'][c] != ' ']
+            for c in chars[:16]: ev.append((a + 0.08 + c * 0.07, 'tick', -7))
+            ev.append((a + 0.36 + len(s['text']) * 0.07, 'shimmer', -3))
+        elif k == 'warning': ev += [(a, 'hit', 0), (a + 0.25, 'alarm', -6)]
+        elif k in ('steps', 'tags'):
+            ev.append((a, 'hit' if k == 'steps' else 'pop', -2))
+            n = len(s.get('tags', s.get('items', [])))
+            for j in range(n): ev.append((at[j] if j < len(at) else a + 0.35 + j * s.get('stagger', 0.25), 'pop', -2))
+        elif k == 'check': ev += [(a + 0.1, 'pop', 0), (a + 0.3, 'coin', -4)]
+        elif k in ('icons', 'formula'):
+            for j in range(len(s['items'])): ev.append((at[j] if j < len(at) else a + 0.2 + j * 0.45, 'pop', 0))
+            if k == 'formula':
+                tr = s.get('result_at', (at[-1] if at else a + 0.2 + (len(s['items']) - 1) * 0.45) + 0.5)
+                ev += [(tr, 'hit', 0), (tr + 0.15, 'shimmer', -4)]
+        elif k == 'photo':
+            for j in range(len(s['items'])): ev.append((at[j] if j < len(at) else a + 0.1 + j * 0.3, 'whoosh', -2))
+            ev.append(((at[-1] if at else a + 0.1 + (len(s['items']) - 1) * 0.3) + 0.3, 'shimmer', -3))
+        elif k == 'stamp':
+            ts = s.get('stamp_at', a + 0.5)
+            if s.get('bill'): ev.append((a + 0.02, 'whoosh', -2))
+            ev += [(ts + 0.15, 'punch', 2), (ts + 0.3, 'coin', -5)]
+        elif k == 'cta': ev += [(a, 'swell', -2), (a + 0.05, 'coin', -2), (a + 0.35, 'shimmer', -4)]
+    busy = [e[0] for e in ev]
+    for t in spec.get('cuts', []):   # zoom jump cuts: a light whoosh, unless something else plays there
+        if all(abs(t - u) > 0.45 for u in busy): ev.append((t - 0.05, 'whoosh', -10))
+    return ev
+
 SFX_OF = dict(photo='whoosh', odometer='tick', warning='impact', steps='pop', check='pop', icons='pop', formula='pop', stamp='punch', tags='pop', cta='coin')
 
 def build(spec, out_dir):
@@ -262,13 +302,16 @@ def build(spec, out_dir):
     open(os.path.join(out_dir, 'index.html'), 'w').write(doc)
     # sound effects track (built-in synth, no downloads)
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import sfx
-    ev = [(s['t'][0], SFX_OF[s['kind']]) for s in sc]
-    for s in sc:
-        if s['kind'] == 'stamp': ev.append((s.get('stamp_at', s['t'][0] + 0.5), 'punch'))
-        if s['kind'] in ('icons', 'formula'):
-            ev += [(t, 'pop') for t in (s.get('at') or [])[1:]]
+    if spec.get('sfx') == 'minimal':
+        ev = [(s['t'][0], SFX_OF[s['kind']]) for s in sc]
+        for s in sc:
+            if s['kind'] == 'stamp': ev.append((s.get('stamp_at', s['t'][0] + 0.5), 'punch'))
+            if s['kind'] in ('icons', 'formula'):
+                ev += [(t, 'pop') for t in (s.get('at') or [])[1:]]
+    else:
+        ev = rich_sfx(sc, spec)
     for a, b, *_ in spec.get('flashback', []): ev += [(a, 'whoosh'), (b - 0.05, 'click')]
-    sfx.render_track(sorted(ev), D, os.path.join(out_dir, 'assets', 'sfx.wav'), spec.get('sfx_gain_db', -14))
+    sfx.render_track(sorted(ev), D, os.path.join(out_dir, 'assets', 'sfx.wav'), spec.get('sfx_gain_db', -14), spec.get('music_db'))
 
 if __name__ == '__main__':
     build(json.load(open(sys.argv[1])), sys.argv[2])
