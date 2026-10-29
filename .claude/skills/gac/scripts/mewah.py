@@ -284,7 +284,7 @@ def manim(el, t, W, H):
         for i in range(8):
             side = -1 if i % 2 == 0 else 1; st = i * 0.22; v = u - st
             if v < 0: continue
-            x = cx + side * (230 + rnd.uniform(0, 140)) * sc + side * v * 60 * sc
+            x = cx + side * (210 + rnd.uniform(0, 90)) * sc + side * v * 35 * sc
             y = cy + 140 * sc - v * 260 * sc - 40 * math.sin(v * 3 + i)
             n = _note(int(150 * sc), int(76 * sc), side * (10 + v * 40 + rnd.uniform(-15, 15)))
             _paste(fr, n, x, y, fade * min(1, v / 0.15) * max(0, 1 - v / 2.6))
@@ -294,6 +294,7 @@ def manim(el, t, W, H):
             v = u - 0.25 - i * 0.16
             if v < 0: continue
             x = cx + (-60 + rnd.uniform(0, 120)) * sc; y = cy + 90 * sc + 0.5 * 1800 * v * v * sc
+            if y > el.get('floor', 1470): continue   # stay above the TikTok caption zone
             if i % 2: it = _note(int(110 * sc), int(56 * sc), rnd.uniform(-60, 60) + v * 200)
             else: it = _gcoin(int(26 * sc), v * 3)
             _paste(fr, it, x, y, fade * max(0, 1 - v / 0.9))
