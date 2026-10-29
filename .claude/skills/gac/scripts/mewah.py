@@ -304,9 +304,12 @@ def manim(el, t, W, H):
         base_y = cy + 120 * sc
         for k in range(n):
             _paste(fr, cs, cx, base_y - k * step, fade)
-        y_top = base_y - n * step; fall = min(1, v / 0.4)
-        y = y_top - el.get('drop', 320) * sc * (1 - fall * fall)
-        _paste(fr, _gcoin(int(34 * sc), v * 2) if fall < 1 else cs, cx, y, fade * min(1, v / 0.1))
+        y_top = base_y - n * step
+        if el.get('drop', 320) <= 0:   # static: the new coin simply pops onto the stack, nothing moves through the frame
+            _paste(fr, cs.resize((max(1, int(cs.width * pop(v / 0.25))), max(1, int(cs.height * pop(v / 0.25)))), Image.BICUBIC), cx, y_top, fade)
+        else:
+            fall = min(1, v / 0.4); y = y_top - el.get('drop', 320) * sc * (1 - fall * fall)
+            _paste(fr, _gcoin(int(34 * sc), v * 2) if fall < 1 else cs, cx, y, fade * min(1, v / 0.1))
         if n: ImageDraw.Draw(fr).text((cx + 100 * sc, base_y - 4), f'{n} bulan', font=sans(44 * sc, 'ExtraBold'), fill=(255, 214, 90, int(255 * fade)), anchor='lm')
     elif kind == 'calendar':     # a coin appears on each month
         p = ease_out(u / 0.3); per = el.get('every', 0.35); start = 0.35

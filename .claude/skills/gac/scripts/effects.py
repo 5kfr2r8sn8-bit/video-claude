@@ -150,21 +150,24 @@ def make_zoom(kind):
 FX = dict(glass=fx_glass, chart=fx_chart, checklist=fx_checklist, phone=fx_phone, pullback=fx_pullback,
           zoomcut=make_zoom('zoomcut'), digitalzoom=make_zoom('digitalzoom'))
 SFX = dict(glass='whoosh', chart='whoosh', checklist='pop', phone='whoosh', pullback='swoosh', zoomcut='hit', digitalzoom='swell')
+import effects2   # 17 more effects (orbit, chat, frame_escape, ...): see references/effects.md
+FX.update(effects2.FX2); SFX.update(effects2.SFX2)
 
 def apply(video, specs, N, W, H, base_dir, face_box=None):
     """Rewrite `video` (the cut base) with the effects. Returns ([(start, end)] output windows, [(t, sfx)])."""
     wins, ev, todo = [], [], []
     for e in specs:
-        if e['type'] not in FX: print(f"WARNING effect '{e['type']}' unknown (glass/chart/checklist/zoomcut/phone/pullback/digitalzoom)"); continue
+        if e['type'] not in FX: print(f"WARNING effect '{e['type']}' unknown ({'/'.join(FX)})"); continue
         e = dict(e); s, t_end = N(e['t'][0]), N(e['t'][1])
         if e.get('image') and not os.path.isabs(e['image']): e['image'] = os.path.join(base_dir, e['image'])
         e['_ticks'] = [N(x) - s for x in e['at']] if e.get('at') else None
         fb = face_box(video, s + 0.1) if face_box else None; e['_face_y'] = (fb[0] + fb[1]) / 2 if fb else H * 0.36
+        e['_face'] = fb; e['_base'] = base_dir
         todo.append((s, t_end, e)); ev.append((s, SFX[e['type']]))
         if e['type'] == 'checklist': ev += [(s + (x if e['_ticks'] else tick_at(k, len(e['items']), t_end - s)) + 0.1, 'tick') for k, x in enumerate(e['_ticks'] or e['items'])]
         if e['type'] == 'zoomcut':
             n = len(e.get('zooms', [1.0, 1.22, 1.45, 1.0])); ev += [(s + k * (t_end - s) / n, 'hit') for k in range(1, n)]
-        if e['type'] in ('glass', 'chart', 'checklist', 'phone', 'pullback'): wins.append((s, t_end))   # captions hide under panels
+        if e['type'] in ('glass', 'chart', 'checklist', 'phone', 'pullback') + effects2.PANEL2: wins.append((s, t_end))   # captions hide under panels
     if not todo: return wins, ev
     tmp = video + '.fx.mov'; fps = 30
     dec = subprocess.Popen(['ffmpeg', '-v', 'error', '-i', video, '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], stdout=subprocess.PIPE)
@@ -179,7 +182,7 @@ def apply(video, specs, N, W, H, base_dir, face_box=None):
         if act:
             fr = Image.frombytes('RGB', (W, H), buf).convert('RGBA')
             for s, e_, e in act:
-                fn = FX[e['type']]
+                fn = FX[e['type']]; e.setdefault('_ticks', None)
                 fr = fn(fr, e, t - s, e_ - s, W, H, e['_ticks']) if e['type'] == 'checklist' else fn(fr, e, t - s, e_ - s, W, H)
             buf = fr.convert('RGB').tobytes()
         enc.stdin.write(buf); k += 1

@@ -110,6 +110,12 @@ the captions; captions hide under the panels). Offer them in the plan as "efek p
 - `digitalzoom`: slow smooth zoom to the face (`to`)
 Give each effect at least ~1.5 s; keep 1–2 effects per 15 s so the face stays the focus.
 
+## Pustaka kesan (20 kesan)
+Bila peserta sebut nama kesan (orbit, chat takeover, frame escape, snap zoom, checklist pop, headline storm,
+zoom portal, growth curve, studio reveal, b-roll overlay, paper cutout, dolly zoom, magazine cover,
+liquid glass, zoom through cut, green screen, frame break, digital zoom, phone mockup, checklist), baca
+`references/effects.md`. Peraturan zon di situ wajib: muka sentiasa bersih, tiada apa-apa dalam zon UI TikTok.
+
 ## Gaya rujukan (pilihan)
 Bila peserta sebut "gaya 1" (atau "macam video rujukan tu"), baca `references/gaya1.md` dan ikut
 resipinya untuk sari kata, warna, font, rentak potongan dan bunyi. Fail itu juga menyenaraikan
