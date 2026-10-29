@@ -78,7 +78,7 @@ Panel KEKAL sepanjang bahagian; hanya kandungan bertukar dengan cross-fade 4–6
 (pop / whoosh gambar) tepat masa animasi, tick bergulir pada odometer + kilauan emas, boom pada hook,
 punch + coin pada cop, swell + coin pada CTA, whoosh perlahan pada jump cut zoom (`"cuts"`), dan muzik
 latar sintetik lembut (`"music_db": -12` → ±17 dB bawah suara). `"sfx_gain_db": -11`. Pengguna kata
-bunyi lama (±12 bunyi / 70 s, −17 dB) "kurang"; versi rich ±70 bunyi.
+bunyi lama (±12 bunyi / 70 s, −17 dB) "kurang"; versi rich ±62 bunyi (Rakaman3).
 
 - **Muzik latar perlahan** sepanjang video (nada rendah berterusan dalam spektrum), suara jelas di atas.
 - Kekuatan −19 LUFS, LRA 9.6 (lebih dinamik daripada Gaya 1).
