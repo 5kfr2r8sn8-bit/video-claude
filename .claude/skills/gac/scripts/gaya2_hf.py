@@ -82,6 +82,7 @@ def scene_html(i, s):
         body = f'{arrow}<div class="ctapill">{icon("chat", 46)}<span>{e(s["text"])}</span></div>' + (f'<div class="lbl">{e(s.get("sub", ""))}</div>' if s.get('sub') else '')
     else:
         raise SystemExit(f'unknown scene kind {k}')
+    if s.get('note'): body += f'<div class="note">{e(s["note"])}</div>'   # small disclaimer line
     return f'<div class="scene" id="{sid}">{body}</div>'
 
 def scene_js(i, s):
@@ -102,7 +103,11 @@ def scene_js(i, s):
         L.append(f'tl.to("{sid} .big", {{x: 6, duration: 0.04, repeat: 5, yoyo: true}}, {a + 0.25});')
         L.append(f'tl.fromTo("{sid} .spark", {{opacity: 1, y: 0, scale: 1}}, {{opacity: 0, y: -90, scale: 0.3, duration: 0.8, stagger: 0.05, ease: "power2.out"}}, {a + 0.1});')
     elif k in ('steps', 'tags'):
-        L.append(f'tl.fromTo("{sid} .tag", {{opacity: 0, scale: 0.6}}, {{opacity: 1, scale: 1, duration: 0.2, stagger: {s.get("stagger", 0.25)}, ease: "back.out(2.5)"}}, {a + 0.35});')
+        if s.get('at'):   # each tag lands on its spoken word
+            for j, t0 in enumerate(s['at']):
+                L.append(f'tl.fromTo("{sid} .t{j}", {{opacity: 0, scale: 0.6}}, {{opacity: 1, scale: 1, duration: 0.2, ease: "back.out(2.5)"}}, {t0});')
+        else:
+            L.append(f'tl.fromTo("{sid} .tag", {{opacity: 0, scale: 0.6}}, {{opacity: 1, scale: 1, duration: 0.2, stagger: {s.get("stagger", 0.25)}, ease: "back.out(2.5)"}}, {a + 0.35});')
         if k == 'steps': L.append(f'tl.fromTo("{sid} .badge", {{scale: 0.4, rotation: -30}}, {{scale: 1, rotation: 0, duration: 0.3, ease: "back.out(3)"}}, {a});')
     elif k == 'check':
         L.append(f'tl.fromTo("{sid} svg", {{scale: 0}}, {{scale: 1, duration: 0.3, ease: "back.out(3)"}}, {a + 0.1});')
@@ -204,6 +209,7 @@ def build(spec, out_dir):
                 background: rgba(40,30,22,.55); border: 2px solid rgba(255,255,255,.3); text-align: center; }}
       .fbpill .big {{ font-size: 84px; }}
       .flash {{ position: absolute; inset: 0; background: #fff8ef; opacity: 0; }}
+      .note {{ font-size: 22px; font-style: italic; opacity: .8; font-weight: 500; letter-spacing: .02em; }}
     </style>
   </head>
   <body>
