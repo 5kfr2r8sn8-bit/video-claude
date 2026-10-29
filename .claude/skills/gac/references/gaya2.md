@@ -83,14 +83,13 @@ Panel KEKAL sepanjang bahagian; hanya kandungan bertukar dengan cross-fade 4–6
 Panel hanya di jalur atas kepala (y 250 hingga atas rambut − 20). Kalau ruang atas kepala terlalu
 sempit, kecilkan panel; jangan sekali-kali turunkan ke muka. CTA anak panah ↑ juga dalam jalur itu.
 
-## 8. Yang GAC sudah ada vs perlu dibina
-Ada: panel kaca kabur (`effects.frosted`), nombor bergulir (`counter`), carta (`growth`), pil,
-ikon pop, tanda ✓, cop (`mword`), kilat putih (`fx.flash`), muzik? (tiada, peserta tambah sendiri di TikTok).
-Perlu dibina sebelum Gaya 2 boleh ditiru penuh:
-1. **Panel kaca tetap atas kepala** yang kandungannya bertukar ikut masa (satu elemen `glasspanel` dengan `scenes`).
-2. **Nombor odometer** digit demi digit.
-3. **Cop "MURAH!"** neon senget yang menghentak.
-4. **Baris kad ikon** dan **formula A + B = C**.
-5. **Peralihan flashback jalur filem** + sepia + kilat putih.
-6. Percikan cahaya kecil di sekitar panel.
-Bila peserta minta "gaya 2", tunjuk senarai ini dalam plan dan bina dulu jika setuju.
+## 8. Cara buat (Hyperframes) — SUDAH DIBINA
+Skrip: `scripts/gaya2_hf.py` menjana komposisi HyperFrames (HTML + GSAP) daripada spec JSON.
+1. Potong video (jeda, ulangan) → `PROJECT/assets/cut.mp4` (masa scene = masa video yang dipotong).
+2. Ukur atas kepala (topeng orang); panel di jalur `panel.top` (≥250) hingga atas rambut − 20.
+3. Tulis `spec.json` (jenis scene: odometer, warning, steps, check, icons, formula, stamp, tags, cta;
+   `flashback` untuk imbas kembali jalur filem + kilat putih). Lihat docstring skrip.
+4. `python3 scripts/gaya2_hf.py spec.json PROJECT` → index.html + assets/sfx.wav.
+5. Salin `gsap.min.js` (npm gsap@3.14.2; CDN disekat), `Inter.ttf`, `JetBrainsMono-Bold.ttf` ke `PROJECT/assets/`.
+6. `npx hyperframes lint .` → `npx hyperframes snapshot --at ...` (lihat bingkai) → `npx hyperframes render -o out.mp4`.
+Contoh lengkap: Rakaman2 (`build/hf/r2g2/spec.json`), render ±3 minit untuk 41 s.

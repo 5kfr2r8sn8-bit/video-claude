@@ -1,0 +1,13 @@
+{"video": "assets/cut.mp4", "duration": 40.74, "panel": {"top": 250, "bottom": 545}, "sfx_gain_db": -15,
+ "scenes": [
+  {"t": [0.0, 2.95], "kind": "odometer", "label": "TAK BOLEH PEGANG", "text": "DUIT?"},
+  {"t": [5.06, 6.6], "kind": "warning", "text": "POKET BOCOR", "sub": "ada duit je habis"},
+  {"t": [12.46, 13.8], "kind": "odometer", "label": "CADANGAN SAYA", "text": "2 CARA"},
+  {"t": [13.86, 19.36], "kind": "steps", "num": "1", "text": "Cari circle", "tags": ["Simpan emas", "Melabur", "Bersaing sihat"], "stagger": 1.0},
+  {"t": [19.9, 23.65], "kind": "steps", "num": "2", "text": "Peruntuk duit", "tags": ["Setiap bulan", "Beli emas"], "stagger": 1.2},
+  {"t": [23.8, 26.6], "kind": "check", "text": "Lama-lama jadi biasa", "sub": "paksa dulu, kemudian ketagih"},
+  {"t": [27.02, 30.6], "kind": "odometer", "label": "YANG BESTNYA", "text": "PUBLIC GOLD"},
+  {"t": [30.7, 34.6], "kind": "formula", "items": [["Setiap bulan", "calendar"], ["Auto debit", "repeat"]], "result": "Konsisten", "result_sub": "simpan emas", "at": [31.98, 33.3], "result_at": 33.95},
+  {"t": [34.8, 35.95], "kind": "stamp", "before": "", "text": "BEST!", "stamp_at": 34.85},
+  {"t": [36.05, 40.74], "kind": "cta", "text": "DM saya", "sub": "cara set auto debit"}
+ ]}
