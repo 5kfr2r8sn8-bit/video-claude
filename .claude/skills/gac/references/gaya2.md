@@ -102,6 +102,8 @@ Skrip: `scripts/gaya2_hf.py` menjana komposisi HyperFrames (HTML + GSAP) daripad
    - `logo` (mana-mana scene): `"logo": "assets/pg_logo.png", "logo_at": <masa nama disebut>` → pil putih logo
      pop + kilauan emas + bunyi shimmer. Pada `photo` logo duduk sebaris dengan label. Logo Public Gold (latar
      lutsinar, merah): `assets/ikon/public_gold_logo.png`. Letak setiap kali "Public Gold" disebut (cari dalam transkrip).
+   - Kad app akaun GAP (contoh akaun emas GAP pengguna, kuning): `assets/ikon/akaun_gap.jpg`. Guna `photo` satu
+     item tanpa label, `"img_h": 312`, bila pengguna sebut "akaun emas GAP".
    - `note`: baris penafian kecil (cth "Prestasi lalu bukan jaminan masa depan").
    - Video tak tajam? Dalam pemotong guna `scale ...:flags=lanczos`, `unsharp=5:5:0.9:3:3:0`, `-crf 10`,
      dan render `-q delivery`.

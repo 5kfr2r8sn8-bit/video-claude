@@ -24,6 +24,7 @@ Scene kinds (all drawn inside ONE frosted panel above the head; the content cros
   stamp     {"before": "RM??", "text": "MURAH!"}                                        neon stamp slams in
   tags      {"title": "Macam-macam!", "items": [...]}                                    tag cloud
   cta       {"text": "DM saya", "sub": "cara set auto debit", "arrow": "up"|"none"}
+  photo     {"label": "AKAUN EMAS GAP", "items": [["assets/x.jpg", ""]], "img_h": 280}   own photos / app screenshot cards
   any scene + {"logo": "assets/pg_logo.png", "logo_at": 46.94}   brand logo pill pops in (with shine) when the name is said
 """
 import json, os, sys, html
@@ -88,7 +89,8 @@ def scene_html(i, s):
         else:
             body = f'<div class="big dim">{e(s.get("before", ""))}</div><div class="stamp">{e(s["text"])}</div>'
     elif k == 'photo':   # participant's own product photos in rounded cards
-        cards = ''.join(f'<div class="ph p{j}"><img src="{e(src)}"/>' + (f'<div>{e(cap)}</div>' if cap else '') + '</div>' for j, (src, cap) in enumerate(s['items']))
+        st = f' style="height:{int(s["img_h"])}px"' if s.get('img_h') else ''   # one big screenshot: taller card
+        cards = ''.join(f'<div class="ph p{j}"><img src="{e(src)}"{st}/>' + (f'<div>{e(cap)}</div>' if cap else '') + '</div>' for j, (src, cap) in enumerate(s['items']))
         lbl = f'<div class="lbl">{e(s.get("label", ""))}</div>' if s.get('label') else ''
         if s.get('logo'): lbl = f'<div class="hdr">{logo_html(s)}{lbl}</div>'   # logo + label share one row
         body = lbl + f'<div class="phs">{cards}</div>'
