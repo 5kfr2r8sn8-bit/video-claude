@@ -16,7 +16,7 @@ from PIL import Image, ImageOps
 
 ap = argparse.ArgumentParser(); ap.add_argument('video'); ap.add_argument('bg'); ap.add_argument('out')
 ap.add_argument('--blur', type=float, default=3); ap.add_argument('--crop'); ap.add_argument('--shade', type=float, default=0.08)
-ap.add_argument('--thr', type=float, default=16); ap.add_argument('--reach', type=int, default=61); ap.add_argument('--top', type=float, default=0.22)
+ap.add_argument('--thr', type=float, default=16); ap.add_argument('--reach', type=int, default=61); ap.add_argument('--top', type=float, default=0.22); ap.add_argument('--low', type=float, default=0.66)
 A = ap.parse_args()
 
 def probe(v):
@@ -64,12 +64,31 @@ for n, fr in enumerate(frames()):
     o = sess.run(None, {iname: x})[0][0, 0]; o = (o - o.min()) / (o.max() - o.min() + 1e-9)
     m = np.clip((cv2.resize(o, (SW, SH), interpolation=cv2.INTER_CUBIC) - 0.15) / 0.7, 0, 1)
     masks.append(m.astype(np.float16))
-    if n % 4 == 0:   # plate: average of pixels that are clearly background in this frame
+    if False:
         half = cv2.resize(fr, (HW, HH), interpolation=cv2.INTER_AREA).astype(np.float64)
         bgm = cv2.resize((cv2.dilate((m > 0.15).astype(np.uint8), np.ones((9, 9), np.uint8)) == 0).astype(np.uint8), (HW, HH), interpolation=cv2.INTER_NEAREST).astype(np.float64)
         acc += half * bgm[..., None]; cnt += bgm
     if (n + 1) % 150 == 0: print(f'topeng: {n + 1} bingkai', file=sys.stderr, flush=True)
 M = np.stack(masks).astype(np.float32); N = len(M)
+# body prior: places that are 'you' in most frames (a still arm / shoulder at the frame edge).
+# They are never used for the plate and are always kept, so a still sleeve can't be mistaken for wall.
+freq = (M > 0.5).mean(0); body = cv2.resize((freq > 0.5).astype(np.float32), (HW, HH), interpolation=cv2.INTER_LINEAR)
+body = cv2.dilate((body > 0.5).astype(np.uint8), np.ones((5, 5), np.uint8)).astype(np.float32)
+# lower band (below the elbows): one fixed shape = everywhere the body / hands / chair ever are, so the
+# lap, a still sleeve at the frame edge and fast hands never get holes or flicker.
+ever = cv2.resize((freq > 0.03).astype(np.uint8), (HW, HH), interpolation=cv2.INTER_NEAREST)
+ever = cv2.morphologyEx(ever, cv2.MORPH_CLOSE, np.ones((25, 25), np.uint8)); ever = cv2.dilate(ever, np.ones((9, 9), np.uint8))
+inv = 1 - ever; k_, lab_, st_, _ = cv2.connectedComponentsWithStats(inv)
+for i in range(1, k_):
+    if st_[i, 4] < 6000: ever[lab_ == i] = 1
+EVER = cv2.GaussianBlur(cv2.resize(ever.astype(np.float32), (W, H), interpolation=cv2.INTER_LINEAR), (0, 0), 4)
+yy = np.linspace(0, 1, H)[:, None]; LOW = np.clip((yy - A.low) / 0.05, 0, 1).astype(np.float32)   # 0 above, 1 below
+for n, fr in enumerate(frames()):   # plate pass: average background, only where this frame is clearly background
+    if n % 4: continue
+    m = M[n]; half = cv2.resize(fr, (HW, HH), interpolation=cv2.INTER_AREA).astype(np.float64)
+    bgm = cv2.resize((cv2.dilate((m > 0.15).astype(np.uint8), np.ones((9, 9), np.uint8)) == 0).astype(np.uint8), (HW, HH), interpolation=cv2.INTER_NEAREST).astype(np.float64)
+    bgm *= (1 - body)
+    acc += half * bgm[..., None]; cnt += bgm
 plate = (acc / np.maximum(cnt, 1)[..., None]).astype(np.float32); known = cnt >= 3
 plate = cv2.GaussianBlur(plate, (0, 0), 1.0)
 
@@ -84,6 +103,7 @@ def matte(fr, n):
     zone[:int(HH * A.top)] = (u[:int(HH * A.top)] > 0.5)          # far from the body at the top (ceiling fan): trust the model only
     m = np.where(known, diff * zone, u)
     m = np.maximum(m, (u > 0.85).astype(np.float32))               # solid core
+    m = np.maximum(m, body)                                          # still body parts (edge sleeve) stay
     mb = (m > 0.5).astype(np.uint8)
     mb = cv2.morphologyEx(mb, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)); mb = cv2.morphologyEx(mb, cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8))
     k, lab, st, _ = cv2.connectedComponentsWithStats(mb)            # drop specks that are not the person
@@ -93,7 +113,9 @@ def matte(fr, n):
     inv = 1 - mb; k2, lab2, st2, _ = cv2.connectedComponentsWithStats(inv)   # fill holes inside the body
     for i in range(1, k2):
         x_, y_, w_, h_, a_ = st2[i]
-        if a_ < 4000 and x_ > 0 and y_ > 0 and x_ + w_ < HW and y_ + h_ < HH: mb[lab2 == i] = 1
+        inside = x_ > 0 and y_ > 0 and x_ + w_ < HW and y_ + h_ < HH
+        on_body = body[lab2 == i].mean() > 0.6                      # hole on the body even if it touches the edge
+        if a_ < 4000 and (inside or on_body): mb[lab2 == i] = 1
     full = cv2.resize(mb.astype(np.float32), (W, H), interpolation=cv2.INTER_LINEAR)
     g = cv2.ximgproc.guidedFilter(fr, full, 6, 1e-3)
     return np.clip(g, 0, 1)
@@ -105,6 +127,7 @@ enc = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_f
 prev = None
 for n, fr in enumerate(frames()):
     m = matte(fr, n)
+    m = m * (1 - LOW) + np.maximum(m, EVER) * LOW
     if prev is not None: m = 0.8 * m + 0.2 * prev                # tiny temporal blend, no visible lag
     prev = m
     a = m[..., None]
