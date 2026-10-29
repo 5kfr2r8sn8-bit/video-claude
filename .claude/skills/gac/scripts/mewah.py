@@ -162,17 +162,18 @@ def _put(fr, im, cx, cy, sc=1.0):
     if abs(sc - 1) > 0.01: im = im.resize((max(1, int(im.width * sc)), max(1, int(im.height * sc))), Image.BICUBIC)
     fr.alpha_composite(im, (int(cx - im.width / 2), int(cy - im.height / 2)))
 
-TYPES = ('mtitle', 'mword', 'mstep', 'mpanel', 'mcta')
+TYPES = ('mtitle', 'mword', 'mstep', 'mpanel', 'mcta', 'manim')
 
 def prepare(el, N):
     ty = el['type']
     if ty == 'mpanel': el['_at'] = [N(a) for a in el.get('at', [el['t'][0]] * len(el['rows']))]
-    el['cy'] = el.get('y') or {'mtitle': 330, 'mword': 360, 'mstep': 1180, 'mpanel': 1150, 'mcta': 1330}[ty]
+    el['cy'] = el.get('y') or {'mtitle': 330, 'mword': 360, 'mstep': 1180, 'mpanel': 1150, 'mcta': 1330, 'manim': 1000}[ty]
     return el
 
 def draw(el, t, W, H):
     s, e = el['s'], el['e']; u = t - s; ty = el['type']
     if t < s or t > e: return None
+    if ty == 'manim': return manim(el, t, W, H)
     fr = Image.new('RGBA', (W, H), (0, 0, 0, 0)); out_a = 1.0 if el.get('cover') else min(1.0, max(0.0, (e - t) / 0.2))
     if ty == 'mtitle':
         im = stack(el['lines'], el.get('size', 150)); p = 1.0 if el.get('cover') else ease_out(u / 0.3)
@@ -206,4 +207,111 @@ def sub_frame(grp, t, y, W, H, max_w=860):
         tw = sum(f.getlength(w) for w, _ in l) + sp * (len(l) - 1); x = (W - tw) / 2; yy = y0 + 17 + lh * i + lh / 2
         for w, g in l:
             d.text((x, yy), w, font=f, fill=(255, 214, 90) if g else (255, 255, 255), anchor='lm'); x += f.getlength(w) + sp
+    return fr
+
+
+# ---------------------------------------------------------------- animated illustrations ("manim")
+# Simple vector drawings (no AI images), animated per frame. kind: money_fly / wallet_leak / piggy / calendar.
+SS = 2   # supersample
+
+def _note(w, h, ang):
+    im = Image.new('RGBA', (w * SS, h * SS), (0, 0, 0, 0)); d = ImageDraw.Draw(im); W2, H2 = w * SS, h * SS
+    d.rounded_rectangle((0, 0, W2 - 1, H2 - 1), 10 * SS, fill=(62, 150, 92), outline=(30, 90, 52), width=3 * SS)
+    d.rounded_rectangle((8 * SS, 8 * SS, W2 - 8 * SS, H2 - 8 * SS), 6 * SS, outline=(150, 210, 160), width=2 * SS)
+    r = H2 * 0.3; d.ellipse((W2 * 0.68 - r, H2 / 2 - r, W2 * 0.68 + r, H2 / 2 + r), fill=(120, 190, 130))
+    d.text((W2 * 0.3, H2 / 2), 'RM', font=sans(H2 * 0.38, 'Black'), fill=(235, 250, 235), anchor='mm')
+    im = im.resize((w, h), Image.LANCZOS)
+    return im.rotate(ang, resample=Image.BICUBIC, expand=True)
+
+def _gcoin(r, spin=0.0):
+    """Gold coin; spin 0..1 squashes it horizontally (turning)."""
+    c = coin('RM', r); sx = max(0.15, abs(math.cos(spin * math.pi)))
+    return c.resize((max(2, int(c.width * sx)), c.height), Image.BICUBIC)
+
+def _paste(fr, im, cx, cy, a=1.0):
+    if a < 0.999: im = _alpha(im, a)
+    fr.alpha_composite(im, (int(cx - im.width / 2), int(cy - im.height / 2)))
+
+def _wallet(s, open_=1.0):
+    w, h = int(300 * s), int(210 * s); im = Image.new('RGBA', (w * SS, h * SS), (0, 0, 0, 0)); d = ImageDraw.Draw(im); W2, H2 = w * SS, h * SS
+    d.rounded_rectangle((0, H2 * 0.12, W2, H2), 26 * SS * s, fill=(118, 70, 38), outline=(70, 40, 20), width=int(4 * SS * s))
+    d.rounded_rectangle((W2 * 0.05, H2 * 0.2, W2 * 0.95, H2 * 0.92), 20 * SS * s, outline=(170, 110, 60), width=int(3 * SS * s))
+    d.polygon([(0, H2 * 0.14), (W2, H2 * 0.14), (W2, H2 * 0.5), (0, H2 * 0.5)], fill=(140, 86, 46))      # flap
+    d.rounded_rectangle((W2 * 0.78, H2 * 0.38, W2 * 1.0, H2 * 0.62), 10 * SS * s, fill=(240, 196, 90), outline=(150, 100, 20), width=int(3 * SS * s))
+    # tear at the bottom: jagged dark hole
+    pts = []; n = 9
+    for i in range(n + 1):
+        x = W2 * (0.25 + 0.4 * i / n); y = H2 * (0.97 - (0.12 if i % 2 else 0.02) * open_)
+        pts.append((x, y))
+    pts += [(W2 * 0.65, H2), (W2 * 0.25, H2)]
+    d.polygon(pts, fill=(25, 12, 6))
+    return im.resize((w, h), Image.LANCZOS)
+
+def _piggy(s):
+    w, h = int(300 * s), int(230 * s); im = Image.new('RGBA', (w * SS, h * SS), (0, 0, 0, 0)); d = ImageDraw.Draw(im); W2, H2 = w * SS, h * SS
+    pink, dark = (246, 160, 186), (196, 96, 130)
+    for lx in (0.28, 0.62): d.rounded_rectangle((W2 * lx, H2 * 0.7, W2 * (lx + 0.11), H2 * 0.98), 8 * SS, fill=dark)
+    d.ellipse((W2 * 0.08, H2 * 0.18, W2 * 0.92, H2 * 0.86), fill=pink, outline=dark, width=int(4 * SS * s))
+    d.polygon([(W2 * 0.25, H2 * 0.26), (W2 * 0.33, H2 * 0.05), (W2 * 0.43, H2 * 0.22)], fill=dark)        # ear
+    d.ellipse((W2 * 0.82, H2 * 0.42, W2 * 1.0, H2 * 0.64), fill=(250, 190, 205), outline=dark, width=int(4 * SS * s))   # snout
+    for nx in (0.88, 0.94): d.ellipse((W2 * nx - 5 * SS, H2 * 0.51, W2 * nx + 5 * SS, H2 * 0.55 + 4 * SS), fill=dark)
+    d.ellipse((W2 * 0.66, H2 * 0.36, W2 * 0.7, H2 * 0.42), fill=(40, 20, 30))                              # eye
+    d.rounded_rectangle((W2 * 0.4, H2 * 0.17, W2 * 0.6, H2 * 0.23), 4 * SS, fill=(90, 40, 60))            # coin slot
+    return im.resize((w, h), Image.LANCZOS)
+
+def _calendar(s, filled, cur_p):
+    w, h = int(330 * s), int(300 * s); im = Image.new('RGBA', (w * SS, h * SS), (0, 0, 0, 0)); d = ImageDraw.Draw(im); W2, H2 = w * SS, h * SS
+    d.rounded_rectangle((0, 0, W2 - 1, H2 - 1), 24 * SS * s, fill=(250, 248, 242), outline=GOLD_EDGE, width=int(5 * SS * s))
+    d.rounded_rectangle((0, 0, W2 - 1, H2 * 0.26), 24 * SS * s, fill=(22, 36, 86)); d.rectangle((0, H2 * 0.16, W2 - 1, H2 * 0.26), fill=(22, 36, 86))
+    d.text((W2 / 2, H2 * 0.13), 'SETIAP BULAN', font=sans(H2 * 0.09, 'ExtraBold'), fill=(255, 214, 90), anchor='mm')
+    for ring in (0.3, 0.7): d.rounded_rectangle((W2 * ring - 7 * SS, -10 * SS, W2 * ring + 7 * SS, 22 * SS), 6 * SS, fill=(150, 100, 20))
+    cols, rows = 4, 3; cw, ch = W2 * 0.86 / cols, H2 * 0.62 / rows; x0, y0 = W2 * 0.07, H2 * 0.32
+    for i in range(cols * rows):
+        cx = x0 + (i % cols + 0.5) * cw; cy = y0 + (i // cols + 0.5) * ch; r = min(cw, ch) * 0.36
+        if i < filled or (i == filled and cur_p > 0):
+            k = 1.0 if i < filled else pop(cur_p)
+            rr = r * k; d.ellipse((cx - rr, cy - rr, cx + rr, cy + rr), fill=(240, 182, 50), outline=(160, 100, 10), width=int(3 * SS * s))
+            d.text((cx, cy), 'RM', font=sans(rr * 0.8, 'Black'), fill=(110, 60, 0), anchor='mm')
+        else:
+            d.ellipse((cx - r * 0.5, cy - r * 0.5, cx + r * 0.5, cy + r * 0.5), outline=(200, 196, 186), width=int(2 * SS * s))
+    return im.resize((w, h), Image.LANCZOS)
+
+def manim(el, t, W, H):
+    s, e = el['s'], el['e']; u = t - s
+    if t < s or t > e: return None
+    fr = Image.new('RGBA', (W, H), (0, 0, 0, 0)); kind = el['kind']; sc = el.get('size', 1.0)
+    cx, cy = el.get('x', W / 2), el['cy']; fade = min(1.0, u / 0.2, max(0.0, (e - t) / 0.25))
+    rnd = random.Random(7)
+    if kind == 'money_fly':     # banknotes float up and away from both sides
+        for i in range(8):
+            side = -1 if i % 2 == 0 else 1; st = i * 0.22; v = u - st
+            if v < 0: continue
+            x = cx + side * (230 + rnd.uniform(0, 140)) * sc + side * v * 60 * sc
+            y = cy + 140 * sc - v * 260 * sc - 40 * math.sin(v * 3 + i)
+            n = _note(int(150 * sc), int(76 * sc), side * (10 + v * 40 + rnd.uniform(-15, 15)))
+            _paste(fr, n, x, y, fade * min(1, v / 0.15) * max(0, 1 - v / 2.6))
+    elif kind == 'wallet_leak':  # torn wallet, notes and coins drop out of the hole
+        p = ease_out(u / 0.3); wl = _wallet(sc); _paste(fr, wl, cx, cy - 40 * (1 - p), fade * p)
+        for i in range(7):
+            v = u - 0.25 - i * 0.16
+            if v < 0: continue
+            x = cx + (-60 + rnd.uniform(0, 120)) * sc; y = cy + 90 * sc + 0.5 * 1800 * v * v * sc
+            if i % 2: it = _note(int(110 * sc), int(56 * sc), rnd.uniform(-60, 60) + v * 200)
+            else: it = _gcoin(int(26 * sc), v * 3)
+            _paste(fr, it, x, y, fade * max(0, 1 - v / 0.9))
+    elif kind == 'piggy':        # coins drop into the piggy bank one by one
+        p = ease_out(u / 0.3); pg = _piggy(sc); px, py = cx, cy + 40 * (1 - p)
+        period = el.get('every', 1.1); slot = (px - 0.0 * sc, py - pg.height * 0.3)
+        for i in range(int(u / period) + 1):
+            v = u - 0.3 - i * period
+            if v < 0 or v > 0.55: continue
+            y = slot[1] - 220 * sc + 0.5 * 1500 * v * v * sc
+            if y < slot[1] + 5: _paste(fr, _gcoin(int(30 * sc), v * 2), slot[0], y, fade)
+        _paste(fr, pg, px, py, fade * p)
+        bump = max(0, 1 - ((u - 0.3) % period) / 0.2) if u > 0.85 else 0
+        if bump > 0: ImageDraw.Draw(fr).text((px + pg.width * 0.45, py - pg.height * 0.55), '+RM', font=sans(40 * sc, 'Black'), fill=(255, 214, 90, int(255 * bump * fade)), anchor='mm')
+    elif kind == 'calendar':     # a coin appears on each month
+        p = ease_out(u / 0.3); per = el.get('every', 0.35); start = 0.35
+        filled = int(max(0, u - start) / per); cur = (max(0, u - start) % per) / per
+        cal = _calendar(sc, min(12, filled), cur if filled < 12 else 0); _paste(fr, cal, cx, cy + 50 * (1 - p), fade * p)
     return fr

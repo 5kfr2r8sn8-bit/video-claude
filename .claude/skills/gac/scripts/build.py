@@ -562,7 +562,7 @@ def main():
         if el.get('cover'): el.update(s=0.0, pop=False, fade_in=False)   # hook used as the TikTok/Reels cover frame
         if ty in mewah.TYPES:   # Gaya Mewah Emas (mewah.py)
             mewah.prepare(el, N); el.update(dyn=True, img=None, mewah=True)
-            snd = {'mtitle': None, 'mword': 'shimmer', 'mstep': 'whoosh', 'mpanel': 'pop', 'mcta': 'coin'}[ty]
+            snd = {'mtitle': None, 'mword': 'shimmer', 'mstep': 'whoosh', 'mpanel': 'pop', 'mcta': 'coin', 'manim': 'coin'}[ty]
             if auto and snd and el.get('sfx', True) is not False: sfx_ev.append((el['s'], el.get('sfx') if isinstance(el.get('sfx'), str) else snd))
             if ty == 'mpanel' and auto: sfx_ev += [(a, 'pop') for a in el['_at'][1:]]
             E.append(el); continue
