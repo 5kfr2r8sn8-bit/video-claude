@@ -117,7 +117,7 @@ liquid glass, zoom through cut, green screen, frame break, digital zoom, phone m
 `references/effects.md`. Peraturan zon di situ wajib: muka sentiasa bersih, tiada apa-apa dalam zon UI TikTok.
 
 ## Gaya rujukan (pilihan)
-Bila peserta sebut "gaya 1" (atau "macam video rujukan tu"), baca `references/gaya1.md` dan ikut
+Bila peserta sebut "gaya 1" (atau "macam video rujukan tu"), baca `references/gaya1.md`; "gaya 2" (panel kaca atas kepala) → `references/gaya2.md`; "mewah" / "gaya emas" → elemen `m*` dalam `scripts/mewah.py` dan ikut
 resipinya untuk sari kata, warna, font, rentak potongan dan bunyi. Fail itu juga menyenaraikan
 ciri yang belum disokong. Sebut dalam plan ciri mana yang tak dapat ditiru lagi.
 Gaya baru dari video rujukan lain disimpan sebagai `references/gayaN.md` dengan format yang sama.
