@@ -911,7 +911,7 @@ def main():
             chl = gaya.chapters_frame(CH, t, W, H, ACC)
             if chl is not None: fr.alpha_composite(chl)
         cur = [g for g in subs if g[0] <= t <= g[1] + 0.3]
-        big_on = any((el['type'] in ('bigword', 'mword') or el.get('cover')) and el['s'] <= t <= el['e'] for el in E)   # big word / cover hook replaces the caption
+        big_on = any((el['type'] in ('bigword', 'mword', 'mstep', 'mpanel') or el.get('cover')) and el['s'] <= t <= el['e'] for el in E)   # Mewah panels say it already   # big word / cover hook replaces the caption
         # a caption group that overlaps a big word at any moment is dropped entirely: the big word already says it,
         # and showing its leftover words for a split second after the big word looks like a glitch
         if cur and id(cur[-1]) in big_sents: big_on = True

@@ -115,7 +115,7 @@ def rich(d, x, y, parts, f, anchor='lm'):
         d.text((x, y), t, font=f, fill=(255, 214, 90) if c == 'g' else (255, 255, 255), anchor=anchor); x += f.getlength(t)
     return x
 
-def step_img(num, parts, sub=None, w=820):
+def step_img(num, parts, sub=None, w=760):
     key = ('s', num, str(parts), str(sub), w)
     if key in _C: return _C[key]
     f = sans(52, 'ExtraBold'); fs = sans(36, 'SemiBold'); h = 150 if not sub else 196
@@ -147,7 +147,7 @@ def panel_img(el, t):
 def cta_img(parts):
     key = ('cta', str(parts))
     if key in _C: return _C[key]
-    f = sans(50, 'ExtraBold'); tw = sum(f.getlength(t) for t, _ in parts); w, h = int(tw + 120), 116
+    f = sans(44, 'ExtraBold'); tw = sum(f.getlength(t) for t, _ in parts); w, h = int(tw + 110), 104
     pn, o = navy_panel(w, h, r=h // 2); d = ImageDraw.Draw(pn); rich(d, o + 60, o + h / 2, parts, f)
     _C[key] = pn; return pn
 
@@ -305,7 +305,7 @@ def manim(el, t, W, H):
         for k in range(n):
             _paste(fr, cs, cx, base_y - k * step, fade)
         y_top = base_y - n * step; fall = min(1, v / 0.4)
-        y = y_top - 320 * sc * (1 - fall * fall)
+        y = y_top - el.get('drop', 320) * sc * (1 - fall * fall)
         _paste(fr, _gcoin(int(34 * sc), v * 2) if fall < 1 else cs, cx, y, fade * min(1, v / 0.1))
         if n: ImageDraw.Draw(fr).text((cx + 100 * sc, base_y - 4), f'{n} bulan', font=sans(44 * sc, 'ExtraBold'), fill=(255, 214, 90, int(255 * fade)), anchor='lm')
     elif kind == 'calendar':     # a coin appears on each month
