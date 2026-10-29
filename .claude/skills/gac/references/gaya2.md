@@ -89,6 +89,13 @@ Skrip: `scripts/gaya2_hf.py` menjana komposisi HyperFrames (HTML + GSAP) daripad
 2. Ukur atas kepala (topeng orang); panel di jalur `panel.top` (≥250) hingga atas rambut − 20.
 3. Tulis `spec.json` (jenis scene: odometer, warning, steps, check, icons, formula, stamp, tags, cta;
    `flashback` untuk imbas kembali jalur filem + kilat putih). Lihat docstring skrip.
+   - `photo`: gambar produk peserta sendiri dalam kad bucu bulat, `{"kind":"photo","label":"EMAS FIZIKAL 999.9",
+     "items":[["assets/p_100g.jpg","50g · 100g"],...],"at":[...]}` (pop satu-satu ikut masa disebut).
+   - `stamp` + `"bill":"RM100"`: wang kertas KARTUN (SVG) di kiri, cop di kanan. Jangan guna gambar
+     wang kertas sebenar (pengeluaran semula perlukan kelulusan BNM).
+   - `note`: baris penafian kecil (cth "Prestasi lalu bukan jaminan masa depan").
+   - Video tak tajam? Dalam pemotong guna `scale ...:flags=lanczos`, `unsharp=5:5:0.9:3:3:0`, `-crf 10`,
+     dan render `-q delivery`.
 4. `python3 scripts/gaya2_hf.py spec.json PROJECT` → index.html + assets/sfx.wav.
 5. Salin `gsap.min.js` (npm gsap@3.14.2; CDN disekat), `Inter.ttf`, `JetBrainsMono-Bold.ttf` ke `PROJECT/assets/`.
 6. `npx hyperframes lint .` → `npx hyperframes snapshot --at ...` (lihat bingkai) → `npx hyperframes render -o out.mp4`.

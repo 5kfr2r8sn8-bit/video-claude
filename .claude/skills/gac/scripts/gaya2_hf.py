@@ -73,7 +73,19 @@ def scene_html(i, s):
         cards += f'<div class="op o{len(it) - 1}">=</div><div class="card res">{icon("check", 60)}<div><b>{e(s["result"])}</b></div><small>{e(s.get("result_sub", ""))}</small></div>'
         body = f'<div class="cards">{cards}</div>'
     elif k == 'stamp':
-        body = f'<div class="big dim">{e(s.get("before", ""))}</div><div class="stamp">{e(s["text"])}</div>'
+        bill = ''
+        if s.get('bill'):   # cartoon banknote (an illustration, never a real currency image)
+            bill = (f'<svg class="bill" viewBox="0 0 300 140" width="290" height="135"><rect x="2" y="2" width="296" height="136" rx="14" fill="#B9A6E8" stroke="#6E5AB8" stroke-width="4"/>'
+                    f'<rect x="14" y="14" width="272" height="112" rx="8" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="2" stroke-dasharray="6 5"/>'
+                    f'<g transform="translate(70 72)" fill="#E8584A">' + ''.join(f'<ellipse rx="13" ry="22" transform="rotate({r}) translate(0 -18)"/>' for r in range(0, 360, 72)) + '<circle r="7" fill="#FFD27A"/></g>'
+                    f'<text x="200" y="88" font-size="52" font-weight="900" text-anchor="middle" fill="#3E2F86" font-family="Inter">{e(s["bill"])}</text></svg>')
+        if bill:   # note on the left, stamp beside it (never on top of each other)
+            body = f'<div class="billrow">{bill}<div class="stamp inl">{e(s["text"])}</div></div>'
+        else:
+            body = f'<div class="big dim">{e(s.get("before", ""))}</div><div class="stamp">{e(s["text"])}</div>'
+    elif k == 'photo':   # participant's own product photos in rounded cards
+        cards = ''.join(f'<div class="ph p{j}"><img src="{e(src)}"/>' + (f'<div>{e(cap)}</div>' if cap else '') + '</div>' for j, (src, cap) in enumerate(s['items']))
+        body = (f'<div class="lbl">{e(s.get("label", ""))}</div>' if s.get('label') else '') + f'<div class="phs">{cards}</div>'
     elif k == 'tags':
         tags = ''.join(f'<span class="tag t{j}">{e(t)}</span>' for j, t in enumerate(s['items']))
         body = f'<div class="pilltitle">{e(s["title"])}</div><div class="tags wrap">{tags}</div>'
@@ -120,7 +132,13 @@ def scene_js(i, s):
         if k == 'formula':
             tr = s.get('result_at', (at[-1] if at else a + 0.2 + (len(s['items']) - 1) * 0.45) + 0.5)
             L.append(f'tl.fromTo("{sid} .res", {{opacity: 0, scale: 0.4}}, {{opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2.5)"}}, {tr});')
+    elif k == 'photo':
+        at = s.get('at')
+        for j in range(len(s['items'])):
+            t0 = at[j] if at else a + 0.1 + j * 0.3
+            L.append(f'tl.fromTo("{sid} .p{j}", {{opacity: 0, y: 30, rotation: {(-4 if j % 2 == 0 else 4)}, scale: 0.85}}, {{opacity: 1, y: 0, rotation: {(-3 if j % 2 == 0 else 3)}, scale: 1, duration: 0.35, ease: "back.out(1.8)"}}, {t0});')
     elif k == 'stamp':
+        if s.get('bill'): L.append(f'tl.fromTo("{sid} .bill", {{opacity: 0, x: -60, rotation: -14}}, {{opacity: 1, x: 0, rotation: -6, duration: 0.3, ease: "back.out(2)"}}, {a});')
         ts = s.get('stamp_at', a + 0.5)
         L.append(f'tl.fromTo("{sid} .stamp", {{opacity: 0, scale: 1.8, rotation: -2}}, {{opacity: 1, scale: 1, rotation: -8, duration: 0.18, ease: "power4.in"}}, {ts});')
         L.append(f'tl.to("{sid} .dim", {{opacity: 0.25, duration: 0.1}}, {ts});')
@@ -130,7 +148,7 @@ def scene_js(i, s):
         L.append(f'tl.fromTo("{sid} .ctapill", {{scale: 0.6}}, {{scale: 1, duration: 0.3, ease: "back.out(3)"}}, {a});')
     return '\n      '.join(L)
 
-SFX_OF = dict(odometer='tick', warning='impact', steps='pop', check='pop', icons='pop', formula='pop', stamp='punch', tags='pop', cta='coin')
+SFX_OF = dict(photo='whoosh', odometer='tick', warning='impact', steps='pop', check='pop', icons='pop', formula='pop', stamp='punch', tags='pop', cta='coin')
 
 def build(spec, out_dir):
     D = spec['duration']; P = spec.get('panel', {}); top, bot = P.get('top', 250), P.get('bottom', 550)
@@ -209,6 +227,12 @@ def build(spec, out_dir):
                 background: rgba(40,30,22,.55); border: 2px solid rgba(255,255,255,.3); text-align: center; }}
       .fbpill .big {{ font-size: 84px; }}
       .flash {{ position: absolute; inset: 0; background: #fff8ef; opacity: 0; }}
+      .billrow {{ display: flex; align-items: center; gap: 34px; }}
+      .bill {{ filter: drop-shadow(0 8px 14px rgba(0,0,0,.35)); }}
+      .stamp.inl {{ position: relative; font-size: 96px; }}
+      .phs {{ display: flex; gap: 22px; justify-content: center; align-items: center; margin-top: 10px; }}
+      .ph {{ display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 26px; font-weight: 800; }}
+      .ph img {{ height: {max(120, h - 140)}px; border-radius: 22px; border: 4px solid rgba(255,255,255,.85); box-shadow: 0 10px 24px rgba(0,0,0,.4); object-fit: cover; }}
       .note {{ font-size: 22px; font-style: italic; opacity: .8; font-weight: 500; letter-spacing: .02em; }}
     </style>
   </head>
