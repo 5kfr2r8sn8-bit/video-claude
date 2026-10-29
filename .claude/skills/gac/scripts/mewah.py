@@ -211,7 +211,7 @@ def sub_frame(grp, t, y, W, H, max_w=860):
 
 
 # ---------------------------------------------------------------- animated illustrations ("manim")
-# Simple vector drawings (no AI images), animated per frame. kind: money_fly / wallet_leak / piggy / calendar.
+# Simple vector drawings (no AI images), animated per frame. kind: money_fly / wallet_leak / coinstack / calendar.
 SS = 2   # supersample
 
 def _note(w, h, ang):
@@ -247,16 +247,14 @@ def _wallet(s, open_=1.0):
     d.polygon(pts, fill=(25, 12, 6))
     return im.resize((w, h), Image.LANCZOS)
 
-def _piggy(s):
-    w, h = int(300 * s), int(230 * s); im = Image.new('RGBA', (w * SS, h * SS), (0, 0, 0, 0)); d = ImageDraw.Draw(im); W2, H2 = w * SS, h * SS
-    pink, dark = (246, 160, 186), (196, 96, 130)
-    for lx in (0.28, 0.62): d.rounded_rectangle((W2 * lx, H2 * 0.7, W2 * (lx + 0.11), H2 * 0.98), 8 * SS, fill=dark)
-    d.ellipse((W2 * 0.08, H2 * 0.18, W2 * 0.92, H2 * 0.86), fill=pink, outline=dark, width=int(4 * SS * s))
-    d.polygon([(W2 * 0.25, H2 * 0.26), (W2 * 0.33, H2 * 0.05), (W2 * 0.43, H2 * 0.22)], fill=dark)        # ear
-    d.ellipse((W2 * 0.82, H2 * 0.42, W2 * 1.0, H2 * 0.64), fill=(250, 190, 205), outline=dark, width=int(4 * SS * s))   # snout
-    for nx in (0.88, 0.94): d.ellipse((W2 * nx - 5 * SS, H2 * 0.51, W2 * nx + 5 * SS, H2 * 0.55 + 4 * SS), fill=dark)
-    d.ellipse((W2 * 0.66, H2 * 0.36, W2 * 0.7, H2 * 0.42), fill=(40, 20, 30))                              # eye
-    d.rounded_rectangle((W2 * 0.4, H2 * 0.17, W2 * 0.6, H2 * 0.23), 4 * SS, fill=(90, 40, 60))            # coin slot
+def _coin_side(s):
+    """One gold coin seen from the side (for stacks)."""
+    w, h = int(150 * s), int(30 * s); im = Image.new('RGBA', (w * SS, h * SS), (0, 0, 0, 0)); d = ImageDraw.Draw(im); W2, H2 = w * SS, h * SS
+    d.ellipse((0, H2 * 0.35, W2 - 1, H2 - 1), fill=(176, 108, 10))
+    d.rectangle((0, H2 * 0.32, W2 - 1, H2 * 0.68), fill=(214, 150, 30))
+    for k in range(1, 12): x = W2 * k / 12; d.line([(x, H2 * 0.36), (x, H2 * 0.66)], fill=(170, 104, 8), width=SS)
+    d.ellipse((0, 0, W2 - 1, H2 * 0.62), fill=(255, 214, 90), outline=(190, 126, 14), width=2 * SS)
+    d.ellipse((W2 * 0.12, H2 * 0.08, W2 * 0.88, H2 * 0.54), outline=(230, 170, 40), width=2 * SS)
     return im.resize((w, h), Image.LANCZOS)
 
 def _calendar(s, filled, cur_p):
@@ -299,17 +297,16 @@ def manim(el, t, W, H):
             if i % 2: it = _note(int(110 * sc), int(56 * sc), rnd.uniform(-60, 60) + v * 200)
             else: it = _gcoin(int(26 * sc), v * 3)
             _paste(fr, it, x, y, fade * max(0, 1 - v / 0.9))
-    elif kind == 'piggy':        # coins drop into the piggy bank one by one
-        p = ease_out(u / 0.3); pg = _piggy(sc); px, py = cx, cy + 40 * (1 - p)
-        period = el.get('every', 1.1); slot = (px - 0.0 * sc, py - pg.height * 0.3)
-        for i in range(int(u / period) + 1):
-            v = u - 0.3 - i * period
-            if v < 0 or v > 0.55: continue
-            y = slot[1] - 220 * sc + 0.5 * 1500 * v * v * sc
-            if y < slot[1] + 5: _paste(fr, _gcoin(int(30 * sc), v * 2), slot[0], y, fade)
-        _paste(fr, pg, px, py, fade * p)
-        bump = max(0, 1 - ((u - 0.3) % period) / 0.2) if u > 0.85 else 0
-        if bump > 0: ImageDraw.Draw(fr).text((px + pg.width * 0.45, py - pg.height * 0.55), '+RM', font=sans(40 * sc, 'Black'), fill=(255, 214, 90, int(255 * bump * fade)), anchor='mm')
+    elif kind == 'coinstack':    # coins drop one by one and the stack grows
+        period = el.get('every', 0.8); cs = _coin_side(sc); step = cs.height * 0.55
+        n = int(max(0, u - 0.2) / period); v = max(0, u - 0.2) % period
+        base_y = cy + 120 * sc
+        for k in range(n):
+            _paste(fr, cs, cx, base_y - k * step, fade)
+        y_top = base_y - n * step; fall = min(1, v / 0.4)
+        y = y_top - 320 * sc * (1 - fall * fall)
+        _paste(fr, _gcoin(int(34 * sc), v * 2) if fall < 1 else cs, cx, y, fade * min(1, v / 0.1))
+        if n: ImageDraw.Draw(fr).text((cx, base_y + 60 * sc), f'{n} bulan', font=sans(40 * sc, 'ExtraBold'), fill=(255, 214, 90, int(255 * fade)), anchor='mm')
     elif kind == 'calendar':     # a coin appears on each month
         p = ease_out(u / 0.3); per = el.get('every', 0.35); start = 0.35
         filled = int(max(0, u - start) / per); cur = (max(0, u - start) % per) / per
