@@ -99,6 +99,9 @@ Skrip: `scripts/gaya2_hf.py` menjana komposisi HyperFrames (HTML + GSAP) daripad
      "items":[["assets/p_100g.jpg","50g · 100g"],...],"at":[...]}` (pop satu-satu ikut masa disebut).
    - `stamp` + `"bill":"RM100"`: wang kertas KARTUN (SVG) di kiri, cop di kanan. Jangan guna gambar
      wang kertas sebenar (pengeluaran semula perlukan kelulusan BNM).
+   - `logo` (mana-mana scene): `"logo": "assets/pg_logo.png", "logo_at": <masa nama disebut>` → pil putih logo
+     pop + kilauan emas + bunyi shimmer. Pada `photo` logo duduk sebaris dengan label. Logo Public Gold (latar
+     lutsinar, merah): `assets/ikon/public_gold_logo.png`. Letak setiap kali "Public Gold" disebut (cari dalam transkrip).
    - `note`: baris penafian kecil (cth "Prestasi lalu bukan jaminan masa depan").
    - Video tak tajam? Dalam pemotong guna `scale ...:flags=lanczos`, `unsharp=5:5:0.9:3:3:0`, `-crf 10`,
      dan render `-q delivery`.

@@ -24,6 +24,7 @@ Scene kinds (all drawn inside ONE frosted panel above the head; the content cros
   stamp     {"before": "RM??", "text": "MURAH!"}                                        neon stamp slams in
   tags      {"title": "Macam-macam!", "items": [...]}                                    tag cloud
   cta       {"text": "DM saya", "sub": "cara set auto debit", "arrow": "up"|"none"}
+  any scene + {"logo": "assets/pg_logo.png", "logo_at": 46.94}   brand logo pill pops in (with shine) when the name is said
 """
 import json, os, sys, html
 
@@ -88,7 +89,9 @@ def scene_html(i, s):
             body = f'<div class="big dim">{e(s.get("before", ""))}</div><div class="stamp">{e(s["text"])}</div>'
     elif k == 'photo':   # participant's own product photos in rounded cards
         cards = ''.join(f'<div class="ph p{j}"><img src="{e(src)}"/>' + (f'<div>{e(cap)}</div>' if cap else '') + '</div>' for j, (src, cap) in enumerate(s['items']))
-        body = (f'<div class="lbl">{e(s.get("label", ""))}</div>' if s.get('label') else '') + f'<div class="phs">{cards}</div>'
+        lbl = f'<div class="lbl">{e(s.get("label", ""))}</div>' if s.get('label') else ''
+        if s.get('logo'): lbl = f'<div class="hdr">{logo_html(s)}{lbl}</div>'   # logo + label share one row
+        body = lbl + f'<div class="phs">{cards}</div>'
     elif k == 'tags':
         tags = ''.join(f'<span class="tag t{j}">{e(t)}</span>' for j, t in enumerate(s['items']))
         body = f'<div class="pilltitle">{e(s["title"])}</div><div class="tags wrap">{tags}</div>'
@@ -98,12 +101,21 @@ def scene_html(i, s):
     else:
         raise SystemExit(f'unknown scene kind {k}')
     if s.get('note'): body += f'<div class="note">{e(s["note"])}</div>'   # small disclaimer line
-    return f'<div class="scene" id="{sid}">{body}</div>'
+    if s.get('logo') and k != 'photo': body = logo_html(s) + body
+    return f'<div class="scene{" withlogo" if s.get("logo") else ""}" id="{sid}">{body}</div>'
+
+def logo_html(s):
+    """Brand logo pill (e.g. Public Gold) shown when the speaker says the name: "logo": src, "logo_at": time."""
+    return f'<div class="pglogo"><img src="{html.escape(s["logo"])}"/><span class="shine"></span></div>'
 
 def scene_js(i, s):
     sid = f'#s{i}'; a, b = s['t']; k = s['kind']; L = []
     L.append(f'tl.fromTo("{sid}", {{opacity: 0, y: 14, scale: 0.97}}, {{opacity: 1, y: 0, scale: 1, duration: 0.18, ease: "power2.out"}}, {a});')
     L.append(f'tl.to("{sid}", {{opacity: 0, y: -10, duration: 0.15, ease: "power1.in"}}, {max(a + 0.2, b - 0.15)});')
+    if s.get('logo'):
+        tg = s.get('logo_at', a + 0.05)
+        L.append(f'tl.fromTo("{sid} .pglogo", {{opacity: 0, scale: 0.6}}, {{opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2.5)"}}, {tg});')
+        L.append(f'tl.fromTo("{sid} .shine", {{xPercent: -150}}, {{xPercent: 450, duration: 0.7, ease: "power2.inOut"}}, {tg + 0.3});')
     if k == 'odometer':
         n = len(s['text'])
         for c in range(n):
@@ -158,6 +170,7 @@ def rich_sfx(sc, spec):
     ev = []
     for i, s in enumerate(sc):
         a, b = s['t']; k = s['kind']; at = s.get('at') or []
+        if s.get('logo'): ev.append((s.get('logo_at', a + 0.05) + 0.05, 'shimmer', -3))
         if i == 0: ev += [(a, 'boom', -1)]
         else: ev += [(a - 0.06, 'swoosh', -5)]
         if k == 'odometer':
@@ -231,6 +244,12 @@ def build(spec, out_dir):
       #panel::after {{ content: ""; position: absolute; inset: 0; border-radius: 42px; pointer-events: none;
                background: linear-gradient(115deg, rgba(255,255,255,.18), rgba(255,255,255,0) 40%); }}
       .scene {{ position: absolute; inset: 0; opacity: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 0 40px; }}
+      .pglogo {{ position: relative; overflow: hidden; display: inline-flex; background: #fff; border-radius: 18px; padding: 8px 22px; box-shadow: 0 6px 18px rgba(0,0,0,.3); flex: none; }}
+      .pglogo img {{ height: 62px; display: block; }}
+      .shine {{ position: absolute; top: -20%; left: 0; width: 22%; height: 140%; transform: skewX(-20deg);
+               background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,236,170,.85), rgba(255,255,255,0)); }}
+      .hdr {{ display: flex; align-items: center; justify-content: center; gap: 18px; }}
+      .withlogo .ph img {{ height: {max(110, h - 196)}px; }}
       .lbl {{ font-size: 26px; letter-spacing: .32em; font-weight: 600; opacity: .9; text-transform: uppercase; }}
       .big {{ font-size: 124px; font-weight: 900; line-height: 1; letter-spacing: -0.02em; display: flex; justify-content: center; text-shadow: 0 6px 24px rgba(0,0,0,.35); }}
       .sub2 {{ font-size: 64px; font-weight: 900; letter-spacing: -0.01em; }} .sub2 b {{ color: var(--key); }}
