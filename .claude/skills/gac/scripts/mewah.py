@@ -284,8 +284,8 @@ def manim(el, t, W, H):
         for i in range(8):
             side = -1 if i % 2 == 0 else 1; st = i * 0.22; v = u - st
             if v < 0: continue
-            x = cx + side * (210 + rnd.uniform(0, 90)) * sc + side * v * 35 * sc
-            y = cy + 140 * sc - v * 260 * sc - 40 * math.sin(v * 3 + i)
+            x = cx + side * (el.get('spread', 210) + rnd.uniform(0, 70)) * sc + side * v * 25 * sc
+            y = cy + el.get('rise0', 140) * sc - v * el.get('rise', 260) * sc - 40 * math.sin(v * 3 + i)
             n = _note(int(150 * sc), int(76 * sc), side * (10 + v * 40 + rnd.uniform(-15, 15)))
             _paste(fr, n, x, y, fade * min(1, v / 0.15) * max(0, 1 - v / 2.6))
     elif kind == 'wallet_leak':  # torn wallet, notes and coins drop out of the hole
@@ -307,7 +307,7 @@ def manim(el, t, W, H):
         y_top = base_y - n * step; fall = min(1, v / 0.4)
         y = y_top - 320 * sc * (1 - fall * fall)
         _paste(fr, _gcoin(int(34 * sc), v * 2) if fall < 1 else cs, cx, y, fade * min(1, v / 0.1))
-        if n: ImageDraw.Draw(fr).text((cx, base_y + 60 * sc), f'{n} bulan', font=sans(40 * sc, 'ExtraBold'), fill=(255, 214, 90, int(255 * fade)), anchor='mm')
+        if n: ImageDraw.Draw(fr).text((cx + 100 * sc, base_y - 4), f'{n} bulan', font=sans(44 * sc, 'ExtraBold'), fill=(255, 214, 90, int(255 * fade)), anchor='lm')
     elif kind == 'calendar':     # a coin appears on each month
         p = ease_out(u / 0.3); per = el.get('every', 0.35); start = 0.35
         filled = int(max(0, u - start) / per); cur = (max(0, u - start) % per) / per
