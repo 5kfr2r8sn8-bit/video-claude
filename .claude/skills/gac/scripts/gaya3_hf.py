@@ -181,7 +181,8 @@ def chart_html(i, s):
         xs = s.get('xlabels', [])
         for j, ser in enumerate(s['series']):
             pts = ser['points']; n = len(pts); lo, hi = s.get('ymin', 0), s.get('ymax', max(max(x['points']) for x in s['series']) * 1.1)
-            P = [(60 + k * (W_ - 120) / (n - 1), H_ - 70 - (v - lo) / (hi - lo) * (H_ - 140)) for k, v in enumerate(pts)]
+            xs_ = ser.get('xs') or [k / (n - 1) for k in range(n)]   # xs: real time positions 0..1 (uneven dates)
+            P = [(60 + xs_[k] * (W_ - 120), H_ - 70 - (v - lo) / (hi - lo) * (H_ - 140)) for k, v in enumerate(pts)]
             d = 'M' + ' L'.join(f'{x:.1f},{y:.1f}' for x, y in P)
             L = sum(((P[k + 1][0] - P[k][0]) ** 2 + (P[k + 1][1] - P[k][1]) ** 2) ** .5 for k in range(n - 1))
             dash = ' stroke-dasharray="14 12"' if ser.get('dashed') else ''
@@ -190,6 +191,10 @@ def chart_html(i, s):
             svg += (f'<path class="ln l{j}" d="{d}" fill="none" stroke="{ser.get("color", "#F2C14E")}" stroke-width="{ser.get("width", 9)}" stroke-linecap="round" stroke-linejoin="round"'
                     f' data-len="{L:.0f}" style="stroke-dasharray:{L:.0f};stroke-dashoffset:{L:.0f}"/>')
             if dash: svg += f'<path class="ln2 l{j}b" d="{d}" fill="none" stroke="#0f0c08" stroke-width="{ser.get("width", 9) + 2}"{dash} opacity="0"/>'
+            for k_, txt, *pos in ser.get('labels', []):   # value labels at chosen points ([i, text, "below"])
+                x_, y_ = P[k_]; anc = 'start' if x_ < W_ * 0.3 else ('end' if x_ > W_ * 0.7 else 'middle')
+                if pos and pos[0] == 'below': y_ += 82
+                svg += f'<text class="vl v{j}" x="{x_ + (12 if anc == "start" else -12 if anc == "end" else 0):.0f}" y="{y_ - 26:.0f}" fill="#fff" font-size="36" font-weight="900" text-anchor="{anc}" font-family="Mont" opacity="0">{e(txt)}</text>'
             svg += f'<circle class="dot d{j}" cx="{P[-1][0]:.1f}" cy="{P[-1][1]:.1f}" r="13" fill="{ser.get("color", "#F2C14E")}" stroke="#fff" stroke-width="4" opacity="0"/>'
         svg += f'<line x1="60" y1="{H_ - 70}" x2="{W_ - 60}" y2="{H_ - 70}" stroke="rgba(255,255,255,.35)" stroke-width="3"/>'
         for k, x in enumerate(xs):
@@ -198,11 +203,12 @@ def chart_html(i, s):
         legend = ''.join(f'<span class="lg"><i style="background:{x.get("color", "#F2C14E")}"></i>{e(x["name"])}</span>' for x in s['series'] if x.get('name'))
         body = f'<svg viewBox="0 0 {W_} {H_}" width="{W_}" height="{H_}"><defs><linearGradient id="gfill{i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2C14E" stop-opacity=".45"/><stop offset="1" stop-color="#F2C14E" stop-opacity="0"/></linearGradient></defs>{svg}</svg><div class="legend">{legend}</div>'
     elif ty == 'bar':
-        bars = s['bars']; n = len(bars); mx = max(b[2] for b in bars); bw = min(220, (W_ - 120) / n - 60)
-        for k, (lab, val, v) in enumerate(bars):
-            x = 60 + (k + .5) * (W_ - 120) / n - bw / 2; h = v / mx * (H_ - 190); y = H_ - 70 - h
-            svg += (f'<g class="bar b{k}"><rect x="{x:.0f}" y="{y:.0f}" width="{bw:.0f}" height="{h:.0f}" rx="18" fill="url(#gbar{i})"/>'
-                    f'<text x="{x + bw / 2:.0f}" y="{y - 22:.0f}" fill="#F2C14E" font-size="64" font-weight="900" text-anchor="middle" font-family="Mont">{e(val)}</text></g>'
+        bars = s['bars']; n = len(bars); mx = max(abs(b[2]) for b in bars); bw = min(220, (W_ - 120) / n - 60)
+        for k, bar in enumerate(bars):
+            lab, val, v = bar[:3]; col = bar[3] if len(bar) > 3 else None   # 4th item: solid colour (red fall, green rise)
+            x = 60 + (k + .5) * (W_ - 120) / n - bw / 2; h = max(8, abs(v) / mx * (H_ - 190)); y = H_ - 70 - h
+            svg += (f'<g class="bar b{k}"><rect x="{x:.0f}" y="{y:.0f}" width="{bw:.0f}" height="{h:.0f}" rx="18" fill="{col or f"url(#gbar{i})"}"/>'
+                    f'<text x="{x + bw / 2:.0f}" y="{y - 22:.0f}" fill="{col or "#F2C14E"}" font-size="64" font-weight="900" text-anchor="middle" font-family="Mont">{e(val)}</text></g>'
                     f'<text x="{x + bw / 2:.0f}" y="{H_ - 22}" fill="#fff" font-size="34" font-weight="800" text-anchor="middle" font-family="Mont">{e(lab)}</text>')
         svg += f'<line x1="40" y1="{H_ - 70}" x2="{W_ - 40}" y2="{H_ - 70}" stroke="rgba(255,255,255,.35)" stroke-width="3"/>'
         body = f'<svg viewBox="0 0 {W_} {H_}" width="{W_}" height="{H_}"><defs><linearGradient id="gbar{i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE7A0"/><stop offset=".55" stop-color="#F2C14E"/><stop offset="1" stop-color="#B98018"/></linearGradient></defs>{svg}</svg>'
@@ -231,6 +237,7 @@ def chart_js(i, s):
             L.append(f'tl.to("{sid} .l{j}", {{strokeDashoffset: 0, duration: {dur}, ease: "power1.inOut"}}, {t0});')
             if ser.get('dashed'): L.append(f'tl.to("{sid} .l{j}b", {{opacity: 1, duration: 0.01}}, {t0 + dur});')
             L.append(f'tl.fromTo("{sid} .d{j}", {{opacity: 0, scale: 0, transformOrigin: "50% 50%"}}, {{opacity: 1, scale: 1, duration: 0.25, ease: "back.out(3)"}}, {t0 + dur});')
+            if ser.get('labels'): L.append(f'tl.to("{sid} .v{j}", {{opacity: 1, duration: 0.3, stagger: 0.3}}, {t0 + 0.2});')
         if s.get('fill', True): L.append(f'tl.to("{sid} .area", {{opacity: 1, duration: 0.6}}, {(at[0] if at else a + 0.4) + 0.6});')
     elif ty == 'bar':
         for k in range(len(s['bars'])):
