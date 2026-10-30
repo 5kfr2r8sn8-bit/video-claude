@@ -26,6 +26,8 @@ Scene kinds (all drawn inside ONE frosted panel above the head; the content cros
   cta       {"text": "DM saya", "sub": "cara set auto debit", "arrow": "up"|"none"}
   photo     {"label": "AKAUN EMAS GAP", "items": [["assets/x.jpg", ""]], "img_h": 280}   own photos / app screenshot cards
   any scene + {"logo": "assets/pg_logo.png", "logo_at": 46.94}   ("logo_side": true on a photo puts it beside the photo)
+  "theme": "ceria"   bright colours: each scene's panel its own colour (merah/ungu/teal/oren/biru/pink, or
+                     "color" per scene), gold keys, colourful tag pills, gold CTA button
   "panel": {"bg": "linear-gradient(...)"}   panel colour; bright outdoor video -> deeper tint so white text stays clear   brand logo pill pops in (with shine) when the name is said
 """
 import json, os, sys, html
@@ -105,7 +107,8 @@ def scene_html(i, s):
             body = lbl + f'<div class="phs">{cards}</div>'
     elif k == 'tags':
         tags = ''.join(f'<span class="tag t{j}">{e(t)}</span>' for j, t in enumerate(s['items']))
-        body = f'<div class="pilltitle">{e(s["title"])}</div><div class="tags wrap">{tags}</div>'
+        fs = min(70, int(1200 / max(1, len(s['title']))))   # long titles stay on one line
+        body = f'<div class="pilltitle" style="font-size:{fs}px">{e(s["title"])}</div><div class="tags wrap">{tags}</div>'
     elif k == 'cta':
         arrow = '<div class="arrow">&#8593;</div>' if s.get('arrow', 'none') == 'up' else ''
         body = f'{arrow}<div class="ctapill">{icon("chat", 46)}<span>{e(s["text"])}</span></div>' + (f'<div class="lbl">{e(s.get("sub", ""))}</div>' if s.get('sub') else '')
@@ -174,6 +177,32 @@ def scene_js(i, s):
         L.append(f'tl.fromTo("{sid} .ctapill", {{scale: 0.6}}, {{scale: 1, duration: 0.3, ease: "back.out(3)"}}, {a});')
     return '\n      '.join(L)
 
+CERIA = {   # bright panel colours for theme "ceria" (white text stays readable on all of them)
+    'merah': 'linear-gradient(150deg, rgba(232,57,60,.93), rgba(160,20,30,.93))',
+    'ungu': 'linear-gradient(150deg, rgba(142,68,236,.93), rgba(84,30,170,.93))',
+    'teal': 'linear-gradient(150deg, rgba(20,184,166,.93), rgba(13,110,100,.93))',
+    'biru': 'linear-gradient(150deg, rgba(59,130,246,.93), rgba(30,58,170,.93))',
+    'pink': 'linear-gradient(150deg, rgba(236,72,153,.93), rgba(150,22,80,.93))',
+    'oren': 'linear-gradient(150deg, rgba(245,140,20,.93), rgba(180,75,8,.93))',
+}
+CERIA_CYCLE = [CERIA[k] for k in ('merah', 'ungu', 'teal', 'oren', 'biru', 'pink')]
+CERIA_CSS = """
+      :root { --key: #FFD23F; }
+      #panel { border: 3px solid rgba(255,255,255,.55); }
+      .lbl { opacity: 1; text-shadow: 0 2px 8px rgba(0,0,0,.25); }
+      .big, .mid, .sub2 { text-shadow: 0 4px 16px rgba(0,0,0,.3); }
+      .tag { border: none; color: #2a1600; font-weight: 800; box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+      .tag:nth-child(4n+1) { background: #FFD23F; } .tag:nth-child(4n+2) { background: #FFFFFF; }
+      .tag:nth-child(4n+3) { background: #7CF2C8; } .tag:nth-child(4n+4) { background: #FFB8D6; }
+      .card { background: rgba(255,255,255,.22); border: 2px solid rgba(255,255,255,.6); }
+      .card.res { background: #FFD23F; border-color: #fff; color: #2a1600; }
+      .pilltitle { background: #FFD23F; color: #2a1600; border: 3px solid #fff; }
+      .ctapill { background: #FFD23F; color: #2a1600; border: 3px solid #fff; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+      .ctapill svg circle { stroke: #2a1600; } .ctapill svg path { fill: #2a1600; }
+      .red { color: #FFE14D; text-shadow: 0 0 26px rgba(255,80,80,.9), 0 4px 0 #B3121F; } .red2 { color: #FFD6D6; }
+      .ph div { text-shadow: 0 2px 8px rgba(0,0,0,.35); }
+"""
+
 def rich_sfx(sc, spec):
     """Full sound design (default): a swoosh on every panel change, a sound for every item as it lands
     (on the same times as the animation), rolling ticks on odometers, a boom on the hook, gold shimmer
@@ -225,6 +254,12 @@ def build(spec, out_dir):
         a, b = s['t']
         if groups and a - groups[-1][1] < 0.6: groups[-1][1] = max(groups[-1][1], b)
         else: groups.append([a, b])
+    if spec.get('theme') == 'ceria':   # every scene gets its own bright panel colour (cycled), set as it appears
+        prev_b = None
+        for n, s in enumerate(sorted(sc, key=lambda x: x['t'][0])):
+            a, b = s['t']; col = CERIA.get(s.get('color'), CERIA_CYCLE[n % len(CERIA_CYCLE)] if s['kind'] != 'warning' else CERIA['ungu'])
+            at = a - 0.13 if prev_b is None or a - prev_b >= 0.6 else (prev_b + a) / 2
+            pj.append(f'tl.set("#panel", {{background: "{col}"}}, {max(0, at):.3f});'); prev_b = b
     for a, b in groups:
         pj.append(f'tl.fromTo("#panel", {{opacity: 0, scale: 0.96}}, {{opacity: 1, scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false}}, {max(0, a - 0.12)}); tl.to("#panel", {{opacity: 0, duration: 0.2}}, {b});')
     fb_html, fb_js = '', []
@@ -304,6 +339,7 @@ def build(spec, out_dir):
       .ph {{ display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 26px; font-weight: 800; }}
       .ph img {{ height: {max(120, h - 140)}px; border-radius: 22px; border: 4px solid rgba(255,255,255,.85); box-shadow: 0 10px 24px rgba(0,0,0,.4); object-fit: cover; }}
       .note {{ font-size: 22px; font-style: italic; opacity: .8; font-weight: 500; letter-spacing: .02em; }}
+{CERIA_CSS if spec.get('theme') == 'ceria' else ''}
     </style>
   </head>
   <body>

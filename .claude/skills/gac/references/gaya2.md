@@ -107,9 +107,13 @@ Skrip: `scripts/gaya2_hf.py` menjana komposisi HyperFrames (HTML + GSAP) daripad
    - Ruang atas kepala sempit (kepala di y ±430)? Dalam pemotong turunkan gambar `SHIFT=140` px: `crop` atas
      → `vflip` → `vstack`, kemudian lapisan langit kabur (gblur 25) dengan alfa pudar (geq) supaya tiada garis.
      Zoom jump cut berpaksi pada atas kepala (`crop ... :430*z-430`) supaya jalur panel tak mengecil. (Rakaman4)
+   - **Tema "ceria"** (`"theme": "ceria"`): setiap panel warna terang sendiri (merah/ungu/teal/oren/biru/pink,
+     atau `"color"` per scene), kata kunci kuning emas, pil tag berwarna, butang CTA kuning. Pengguna (Rakaman4):
+     "muka saya jangan edit warna ... edit warna pada caption, bagi segala apa yang timbul warna menarik".
+     → JANGAN gred warna video/muka; warna hanya pada elemen yang timbul. Cop neon hijau: elak panel teal.
    - Video luar / latar terang: panel pekat `"panel": {"bg": "linear-gradient(160deg, rgba(120,78,30,.86),
-     rgba(84,52,22,.84) 55%, rgba(52,32,14,.86))"}` supaya tulisan putih jelas. Gred "warna cantik jelas":
-     `eq=contrast=1.10:saturation=1.22`, lengkung S lembut, `vibrance=intensity=0.15`.
+     rgba(84,52,22,.84) 55%, rgba(52,32,14,.86))"}` supaya tulisan putih jelas. (Gred warna video hanya
+     jika pengguna minta video sendiri lebih cerah, cth Rakaman3; muka kekal warna asal secara lalai.)
    - Ikon tambahan: home, land, shop, bank, cart. `"logo_side": true` pada photo = logo di sebelah gambar.
    - `note`: baris penafian kecil (cth "Prestasi lalu bukan jaminan masa depan").
    - Video tak tajam? Dalam pemotong guna `scale ...:flags=lanczos`, `unsharp=5:5:0.9:3:3:0`, `-crf 10`,
