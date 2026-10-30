@@ -125,6 +125,16 @@ Nota:
 - Panel maksimum 820 px lebar (dalam zon selamat x 130–950).
 - Kata kunci dalam `uipanel.items` mengikut masa `select` (masa asal).
 
+## 7b. Video dengan sari kata tertanam (Rakaman5)
+- Kaburkan jalur sari kata lama dalam sumber dulu (kotak lembut gelap): `split → crop=980:196:50:1402 → gblur=30
+  → drawbox hitam@0.5 → alfa pudar tepi (geq) → overlay` (lihat `build/rakaman5/band.txt`).
+- Timeline: `"look": "asli"` (warna asal, pengguna tak mahu muka diubah warna), `"zoom_anchor": 0.78`
+  (jalur sari kata kekal di tempat bila zoom), zoom 1.0/1.12 sahaja, `subtitles.y` 1540 + `"fixed": true`
+  (sari kata kekal atas kotak), `uipanel` `"y": 1215`, `pill` `"y": 1330` (di atas kotak).
+- Hook atas latar sibuk (pokok): `"ink": "dark", "kicker_bg": true` = pil putih di belakang baris kecil.
+- Rakaman berulang (cubaan pertama + jeda + ulang): cari dengan transkrip klip pendek sekitar jeda panjang,
+  buang cubaan pertama, tambah semula perkataan cubaan kedua dengan masa sebenar.
+
 ## 8. Had yang masih ada
 - Kad notifikasi CTA bertaip ("Dah try, siap!") dan kad logo kecil belum dibuat: guna `uipanel` dengan `typed`.
 - Kata italik dalam sari kata diletak dalam baris (rujukan kadang-kadang letak senget di bawah baris).

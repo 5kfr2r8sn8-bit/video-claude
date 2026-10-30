@@ -263,6 +263,8 @@ def hook2_img(el, t, accent):
     big = big_word_img(el['big'], accent if el.get('big_color', 'accent') == 'accent' else (INK if dark else WHITE), el.get('size', 230))
     w = int(max(tw, big.width)) + 40; kh = 96
     im = Image.new('RGBA', (w, kh + big.height), (0, 0, 0, 0)); d = ImageDraw.Draw(im); x = (w - tw) / 2
+    if el.get('kicker_bg'):   # busy background (trees, shop): a soft white pill keeps the kicker readable
+        d.rounded_rectangle((x - 24, kh * 0.55 - ks * 0.75, x + tw + 10, kh * 0.55 + ks * 0.75), int(ks * 0.75), fill=(255, 255, 255, 230))
     for word, ts in words:
         d.text((x, kh * 0.55), word, font=fk, fill=on if t >= ts else off, anchor='lm'); x += fk.getlength(word + ' ')
     im.alpha_composite(big, (int((w - big.width) / 2), kh)); return im

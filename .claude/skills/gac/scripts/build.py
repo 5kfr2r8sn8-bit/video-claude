@@ -10,6 +10,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 sys.path.insert(0, os.path.dirname(__file__)); import sfx, doc as docmod, theme as gtheme, gaya, mewah
 
 W, H, FPS = 1080, 1920, 30
+ZOOM_ANCHOR = None   # timeline "zoom_anchor": 0..1 row of the frame that stays put when a segment zooms
 QA_HITS = {}   # safe-zone hits found while drawing overlays: zone -> [times]
 CUT_WORDS = None   # Whisper word list for the cut check, set in main() when the timeline has one          # W/H are switched to 1920x1080 for landscape in main()
 FONTS = [('/System/Library/Fonts/Avenir Next.ttc', 0), ('/System/Library/Fonts/Supplemental/Arial Bold.ttf', 0),
@@ -73,6 +74,8 @@ def frame_filter(src, sw, sh, t, box_w, box_h, z, face_y=0.38, span=None):
         fx, fy = sorted(p[0] for p in pts)[1], sorted(p[1] for p in pts)[1]
     else: fx, fy = face_center(src, t)
     x = min(max(0, fx * tw - box_w / 2), tw - box_w); y = min(max(0, fy * th - box_h * face_y), th - box_h)
+    if ZOOM_ANCHOR is not None and box_w == W and box_h == H:   # keep this source row fixed while zooming (burned-in captions band)
+        y = min(max(0, ZOOM_ANCHOR * th - ZOOM_ANCHOR * box_h), th - box_h)
     return f'scale={tw}:{th},crop={box_w}:{box_h}:{int(x)}:{int(y)}'
 def run(cmd): r = subprocess.run(cmd, capture_output=True, text=True); \
     (r.returncode == 0) or sys.exit('FFMPEG FAILED:\n' + ' '.join(cmd)[:400] + '\n' + r.stderr[-1500:]); return r
@@ -498,6 +501,7 @@ def main():
     prof = TL.get('profile') or os.path.join(base_dir, 'gac_profile.json')
     gtheme.apply(prof if isinstance(prof, dict) or os.path.exists(prof) else None, sys.modules[__name__])
     SUB_CFG.update(TL.get('subtitles') or {})
+    global ZOOM_ANCHOR; ZOOM_ANCHOR = TL.get('zoom_anchor')
     global W, H
     canvas = TL.get('canvas', 'auto')
     if canvas == 'auto': sw, sh, _ = src_info(src); canvas = 'portrait' if sh >= sw else 'landscape'
@@ -918,7 +922,7 @@ def main():
         if cur and not (DOC and in_split(t)) and not in_scene(t) and not big_on:  # document / motion scene replace subtitles
             y_ = sub_y.get(id(cur[-1]), TL['subtitles'].get('y', DY(1460)))
             ups = [el['_top'] for el in E if el.get('dyn') and el['type'] in ('uipanel', 'pill') and el['s'] <= t <= el['e'] and '_top' in el]
-            if ups: y_ = min(y_, min(ups) - 34)   # Gaya 1: captions sit just above a panel or pill
+            if ups and not TL['subtitles'].get('fixed'): y_ = min(y_, min(ups) - 34)   # Gaya 1: captions sit just above a panel or pill (subtitles.fixed: stay put, e.g. on a caption band)
             if TL['subtitles'].get('style') == 'mewah':   # Gaya Mewah Emas: navy pill caption
                 fr.alpha_composite(mewah.sub_frame(cur[-1][2], t, y_, W, H))
             elif TL['subtitles'].get('style') == 'type':   # Gaya 1: captions type themselves letter by letter

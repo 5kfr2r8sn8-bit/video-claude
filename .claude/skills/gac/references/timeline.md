@@ -168,5 +168,5 @@ because they act on the video only. Colours follow the profile accent.
 | pill | `parts` [[text, "n" or "i"(italic serif)], ...] | 1300 |
 | uipanel | `title` + `typed` / `items` + `select` [[t, index]] / `rows` [[label, value]] | 1250 |
 | cta + `"style": "button"` | `text` (orange pill) | 1420 |
-Top level: `"chapters": [[t, "step 1 / 3"], ...]`, `"chapters_total"`, `"chapters_end"`; `"look": "warm"`;
+Top level: `"chapters": [[t, "step 1 / 3"], ...]`, `"chapters_total"`, `"chapters_end"`; `"look": "warm"`; `"zoom_anchor": 0.78` (row of the frame kept fixed when a segment zooms, e.g. a burned-in caption band);
 `"subtitles": {"style": "type", "italic": [...]}` (letter-by-letter captions, rise above panels/pills).
