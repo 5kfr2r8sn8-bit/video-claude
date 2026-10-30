@@ -55,4 +55,9 @@ Kad di jalur atas kepala (y 225 hingga atas rambut − 20). Sari kata di paras d
 5. `python3 scripts/gaya3_hf.py spec.json PROJECT` → lint → snapshot → render → encode telefon (lihat gaya2.md).
 - Video yang sudah ada **sari kata tertanam**: letak kotak sari kata (`captions.y/h`) betul-betul atas sari
   kata lama; kotak kabur (backdrop blur 20) + gelap .62 menyembunyikannya. (Rakaman4: y 1428, h 140.)
-- Contoh lengkap: Rakaman4 (`build/hf/r4g3/spec.json`).
+- **B-roll video sebenar**: `broll` dengan `"video": "assets/klip.mp4"` (main senyap di bawah lapisan, label di atas).
+  Kaunter gram atas B-roll: `counter` (`from`/`to`/`unit`/`sub`, `at` = bila disebut). Gambar telefon tanpa bingkai:
+  `"frame": false, "img_w": 470` (`assets/ikon/telefon_app_gap.png`, latar putih dibuang).
+- Bahan terbaik daripada pengguna (Rakaman5): klip tangan pegang jongkong di cawangan, tangkapan skrin app GAP dalam
+  telefon, gambar diri pegang 1kg, wang RM100 (guna separuh sahaja tanpa potret, atas latar sinar).
+- Contoh lengkap: Rakaman5 (`build/hf/r5g3/spec.json`, semua jenis), Rakaman4 (`build/hf/r4g3/spec.json`).

@@ -20,7 +20,9 @@ Card kinds (one card at a time, centred in the band; *word* = gold):
   warn     {"text": "Duit mudah bocor?", "icon": "hourglass"}                        red warning pill
   cta      {"label": "MULAKAN SIMPANAN EMAS", "title": "bersama *Public Gold*", "pills": ["Isi borang sign up"], "at": [..]}
 B-roll (full screen, voice keeps playing):
-  broll    {"images": ["assets/x.jpg", ...], "at": [..], "pill": "Akaun GAP", "pill_at": t,
+  counter  {"label": "...", "from": 1, "to": 1000, "unit": "g", "sub": "1 KILOGRAM", "at": t, "dur": 1.6}   number rolls up
+  broll    {"video": "assets/clip.mp4" (optional, real B-roll), "img_w": 640, "frame": false,
+            "images": ["assets/x.jpg", ...], "at": [..], "pill": "Akaun GAP", "pill_at": t,
             "logo": "assets/pg_logo.png", "logo_at": t, "tag": "Serendah RM100", "tag_at": t, "layout": "row"|"one"}
 """
 import json, os, sys, html, re
@@ -64,7 +66,8 @@ def card_html(i, s):
     if k == 'title':
         t, gold = [], False
         for w in s['title'].split(' '):   # *several words* stay gold across the word split
-            st = w.startswith('*'); en = w.endswith('*'); w = w.strip('*'); gold = gold or st
+            m = re.match(r'^(\*?)(.*?)(\*?)([,.!?]*)$', w)   # "*Bajet*," -> gold "Bajet,"
+            st, w, en = bool(m.group(1)), m.group(2) + m.group(4), bool(m.group(3)); gold = gold or st
             t.append(f'<span class="w{" g" if gold else ""}">{e(w)}</span>'); gold = gold and not en
         t = ' '.join(t)
         body = f'{lbl}<div class="serif" style="font-size:{s.get("size", 72)}px">{t}</div>' + (f'<div class="sub">{gold_words(s["sub"])}</div>' if s.get('sub') else '')
@@ -91,6 +94,9 @@ def card_html(i, s):
         pills = ''.join(f'<div class="gpill p{j}">{ICON["doc"]}<span>{e(p)}</span>{ICON["down"]}</div>' for j, p in enumerate(s.get('pills', [])))
         body = f'<div class="card in">{lbl}<div class="serif" style="font-size:56px">{gold_words(s["title"])}</div></div><div class="pills">{pills}</div>'
         return f'<div class="card bare" id="{sid}">{body}</div>'
+    elif k == 'counter':
+        body = (f'{lbl}<div class="bigg cnt"><span id="n{i}">{s.get("from", 0):,}</span><small>{e(s.get("unit", ""))}</small></div>'
+                + (f'<div class="cntsub">{e(s["sub"])}</div>' if s.get('sub') else ''))
     elif k == 'broll':
         return ''
     else:
@@ -98,11 +104,14 @@ def card_html(i, s):
     return f'<div class="card" id="{sid}">{body}</div>'
 
 def broll_html(i, s):
-    imgs = ''.join(f'<img class="bi i{j}" src="{e(src)}"/>' for j, src in enumerate(s['images']))
+    st = f' style="width:{int(s["img_w"])}px"' if s.get('img_w') else ''
+    imgs = ''.join(f'<img class="bi i{j}{"" if s.get("frame", True) else " free"}" src="{e(src)}"{st}/>' for j, src in enumerate(s.get('images', [])))
     extra = ''
     if s.get('logo'): extra += f'<div class="blogo"><img src="{e(s["logo"])}"/></div>'
     if s.get('pill'): extra += f'<div class="bpill">{e(s["pill"])}</div>'
     if s.get('tag'): extra += f'<div class="btag">{e(s["tag"])}</div>'
+    if s.get('video'):   # real B-roll clip underneath (root-level <video>): only a soft shade + labels here
+        return f'<div class="broll vb" id="b{i}"><div class="bimgs {s.get("layout", "one")}">{imgs}</div>{extra}</div>'
     return f'<div class="broll" id="b{i}"><div class="rays"></div><div class="bimgs {s.get("layout", "one")}">{imgs}</div>{extra}</div>'
 
 def card_js(i, s):
@@ -111,8 +120,11 @@ def card_js(i, s):
         sid = f'#b{i}'
         L.append(f'tl.fromTo("{sid}", {{opacity: 0}}, {{opacity: 1, duration: 0.2}}, {a});')
         L.append(f'tl.to("{sid}", {{opacity: 0, duration: 0.2}}, {b - 0.2});')
-        L.append(f'tl.fromTo("{sid} .rays", {{rotation: 0}}, {{rotation: 14, duration: {b - a:.2f}, ease: "none"}}, {a});')
-        at = s.get('at') or [a + 0.1 + j * 0.35 for j in range(len(s['images']))]
+        if s.get('video'):
+            L.append(f'tl.fromTo("#bv{i}", {{opacity: 0, scale: 1.04}}, {{opacity: 1, scale: 1, duration: 0.25}}, {a}); tl.to("#bv{i}", {{opacity: 0, duration: 0.2}}, {b - 0.2});')
+        else:
+            L.append(f'tl.fromTo("{sid} .rays", {{rotation: 0}}, {{rotation: 14, duration: {b - a:.2f}, ease: "none"}}, {a});')
+        at = s.get('at') or [a + 0.1 + j * 0.35 for j in range(len(s.get('images', [])))]
         for j, t0 in enumerate(at):
             L.append(f'tl.fromTo("{sid} .i{j}", {{opacity: 0, y: 60, scale: 0.85, rotation: {(-4 if j % 2 == 0 else 4)}}}, {{opacity: 1, y: 0, scale: 1, rotation: {(-2 if j % 2 == 0 else 2)}, duration: 0.45, ease: "back.out(1.6)"}}, {t0});')
         L.append(f'tl.fromTo("{sid} .bimgs", {{scale: 1}}, {{scale: 1.06, duration: {b - a:.2f}, ease: "none"}}, {a});')
@@ -127,6 +139,11 @@ def card_js(i, s):
         n = len(s['title'].split(' '))
         L.append(f'tl.fromTo("{sid} .w", {{opacity: 0, y: 14, filter: "blur(6px)"}}, {{opacity: 1, y: 0, filter: "blur(0px)", duration: 0.3, stagger: 0.12}}, {a + 0.15});')
         if s.get('sub'): L.append(f'tl.fromTo("{sid} .sub", {{opacity: 0}}, {{opacity: 1, duration: 0.3}}, {s.get("sub_at", a + 0.3 + n * 0.12)});')
+    elif k == 'counter':
+        t0 = s.get('at', a + 0.3); dur = s.get('dur', 1.6)
+        L.append(f'const o{i} = {{v: {s.get("from", 0)}}}; tl.to(o{i}, {{v: {s["to"]}, duration: {dur}, ease: "power2.inOut", onUpdate: () => {{ document.getElementById("n{i}").textContent = Math.round(o{i}.v).toLocaleString("en-US"); }}}}, {t0});')
+        L.append(f'tl.fromTo("{sid} .cnt", {{scale: 1}}, {{scale: 1.12, duration: 0.15, yoyo: true, repeat: 1}}, {t0 + dur});')
+        if s.get('sub'): L.append(f'tl.fromTo("{sid} .cntsub", {{opacity: 0, scale: 0.6}}, {{opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2.5)"}}, {s.get("sub_at", t0 + dur)});')
     elif k in ('big', 'bars'):
         L.append(f'tl.fromTo("{sid} .bigg", {{scale: 1.35, opacity: 0}}, {{scale: 1, opacity: 1, duration: 0.3, ease: "back.out(2)"}}, {a + 0.05});')
         L.append(f'tl.fromTo("{sid} .sub", {{opacity: 0, y: 8}}, {{opacity: 1, y: 0, duration: 0.3}}, {s.get("sub_at", a + 0.4)});')
@@ -165,6 +182,9 @@ def sfx_events(sc):
         elif k == 'bars': ev += [(a + 0.05, 'hit', -1)] + [(a + 0.6 + j * 0.18, 'tick', -6) for j in range(7)] + [(a + 1.9, 'coin', -4)]
         elif k in ('chips', 'gold'): ev += [(at[j] if j < len(at) else a + 0.2 + j * 0.35, 'pop', 0) for j in range(len(s['items']))]
         elif k == 'warn': ev += [(a + 0.05, 'alarm', -6)]
+        elif k == 'counter':
+            t0 = s.get('at', a + 0.3); dur = s.get('dur', 1.6)
+            ev += [(t0 + j * dur / 10, 'tick', -7) for j in range(10)] + [(t0 + dur, 'coin', -1), (s.get('sub_at', t0 + dur) + 0.05, 'shimmer', -4)]
         elif k == 'cta': ev += [(a, 'swell', -3)] + [(t, 'coin', -2) for t in (s.get('at') or [a + 0.6])]
     return ev
 
@@ -173,6 +193,8 @@ def build(spec, out):
     sc = spec['scenes']; C = spec.get('captions', {})
     cards = '\n        '.join(card_html(i, s) for i, s in enumerate(sc) if s['kind'] != 'broll')
     brolls = '\n        '.join(broll_html(i, s) for i, s in enumerate(sc) if s['kind'] == 'broll')
+    bvids = '\n      '.join(f'<video id="bv{i}" class="clip bvid" src="{e(s["video"])}" data-start="{s["t"][0]:.2f}" data-duration="{s["t"][1] - s["t"][0]:.2f}" data-track-index="{3 + i}" muted playsinline></video>'
+                            for i, s in enumerate(sc) if s['kind'] == 'broll' and s.get('video'))
     js = '\n      '.join(card_js(i, s) for i, s in enumerate(sc))
     cap_html, cap_js = '', []
     if C.get('words'):
@@ -237,6 +259,12 @@ def build(spec, out):
       .bimgs {{ position: absolute; left: 0; right: 0; top: 520px; display: flex; justify-content: center; align-items: center; gap: 26px; }}
       .bimgs.one {{ top: 560px; }}
       .bi {{ border-radius: 28px; border: 5px solid rgba(255,255,255,.9); box-shadow: 0 24px 60px rgba(0,0,0,.6); object-fit: cover; }}
+      .bvid {{ position: absolute; inset: 0; width: 1080px; height: 1920px; object-fit: cover; opacity: 0; }}
+      .broll.vb {{ background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,0) 30%, rgba(0,0,0,0) 62%, rgba(0,0,0,.45)); }}
+      .bi.free {{ border: none; border-radius: 0; box-shadow: none; filter: drop-shadow(0 26px 50px rgba(0,0,0,.6)); }}
+      .cnt {{ font-size: 104px; display: flex; align-items: baseline; justify-content: center; gap: 8px; }} .cnt small {{ font-size: 54px; }}
+      .cntsub {{ display: inline-block; font-size: 26px; font-weight: 900; letter-spacing: .12em; color: #2a1600; padding: 6px 18px; border-radius: 12px; margin-top: 6px;
+                background: linear-gradient(180deg, #FFE7A0, #F2C14E 60%, #D49B2A); }}
       .bimgs.one .bi {{ width: 900px; }} .bimgs.row .bi {{ height: 470px; max-width: 320px; }}
       .blogo {{ position: absolute; left: 50%; top: 330px; transform: translateX(-50%); background: #fff; border-radius: 22px; padding: 12px 30px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }}
       .blogo img {{ height: 80px; display: block; }}
@@ -249,6 +277,7 @@ def build(spec, out):
   <body>
     <div id="root" data-composition-id="main" data-start="0" data-duration="{D:.3f}" data-width="1080" data-height="1920">
       <video id="vid" class="clip" src="{spec["video"]}" data-start="0" data-duration="{D:.3f}" data-track-index="0" data-has-audio="true"></video>
+      {bvids}
       <audio id="sfx" class="clip" src="assets/sfx.wav" data-start="0" data-duration="{D:.3f}" data-track-index="1"></audio>
       <div id="layer" class="clip" data-start="0" data-duration="{D:.3f}" data-track-index="2">
         {brolls}
