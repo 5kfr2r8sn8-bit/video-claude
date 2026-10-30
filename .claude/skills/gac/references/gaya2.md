@@ -104,6 +104,13 @@ Skrip: `scripts/gaya2_hf.py` menjana komposisi HyperFrames (HTML + GSAP) daripad
      lutsinar, merah): `assets/ikon/public_gold_logo.png`. Letak setiap kali "Public Gold" disebut (cari dalam transkrip).
    - Kad app akaun GAP (contoh akaun emas GAP pengguna, kuning): `assets/ikon/akaun_gap.jpg`. Guna `photo` satu
      item tanpa label, `"img_h": 312`, bila pengguna sebut "akaun emas GAP".
+   - Ruang atas kepala sempit (kepala di y ±430)? Dalam pemotong turunkan gambar `SHIFT=140` px: `crop` atas
+     → `vflip` → `vstack`, kemudian lapisan langit kabur (gblur 25) dengan alfa pudar (geq) supaya tiada garis.
+     Zoom jump cut berpaksi pada atas kepala (`crop ... :430*z-430`) supaya jalur panel tak mengecil. (Rakaman4)
+   - Video luar / latar terang: panel pekat `"panel": {"bg": "linear-gradient(160deg, rgba(120,78,30,.86),
+     rgba(84,52,22,.84) 55%, rgba(52,32,14,.86))"}` supaya tulisan putih jelas. Gred "warna cantik jelas":
+     `eq=contrast=1.10:saturation=1.22`, lengkung S lembut, `vibrance=intensity=0.15`.
+   - Ikon tambahan: home, land, shop, bank, cart. `"logo_side": true` pada photo = logo di sebelah gambar.
    - `note`: baris penafian kecil (cth "Prestasi lalu bukan jaminan masa depan").
    - Video tak tajam? Dalam pemotong guna `scale ...:flags=lanczos`, `unsharp=5:5:0.9:3:3:0`, `-crf 10`,
      dan render `-q delivery`.

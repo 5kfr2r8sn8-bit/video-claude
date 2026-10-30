@@ -25,7 +25,8 @@ Scene kinds (all drawn inside ONE frosted panel above the head; the content cros
   tags      {"title": "Macam-macam!", "items": [...]}                                    tag cloud
   cta       {"text": "DM saya", "sub": "cara set auto debit", "arrow": "up"|"none"}
   photo     {"label": "AKAUN EMAS GAP", "items": [["assets/x.jpg", ""]], "img_h": 280}   own photos / app screenshot cards
-  any scene + {"logo": "assets/pg_logo.png", "logo_at": 46.94}   brand logo pill pops in (with shine) when the name is said
+  any scene + {"logo": "assets/pg_logo.png", "logo_at": 46.94}   ("logo_side": true on a photo puts it beside the photo)
+  "panel": {"bg": "linear-gradient(...)"}   panel colour; bright outdoor video -> deeper tint so white text stays clear   brand logo pill pops in (with shine) when the name is said
 """
 import json, os, sys, html
 
@@ -38,6 +39,11 @@ ICONS = {   # simple inline SVG glyphs (no emoji fonts needed)
     'gold': '<path d="M8 34 l6 -12 h20 l6 12 z" fill="#F5C451" stroke="#B9851C" stroke-width="2.5"/><path d="M16 22 l4 -8 h8 l4 8" fill="#FFE08A" stroke="#B9851C" stroke-width="2.5"/>',
     'check': '<circle cx="24" cy="24" r="16" fill="#46B58C"/><path d="M16 24 l6 6 l11 -12" fill="none" stroke="#fff" stroke-width="4"/>',
     'robot': '<rect x="10" y="14" width="28" height="22" rx="7" fill="#fff"/><circle cx="19" cy="25" r="3.5" fill="#2b2b2b"/><circle cx="29" cy="25" r="3.5" fill="#2b2b2b"/><line x1="24" y1="8" x2="24" y2="14" stroke="#fff" stroke-width="3"/>',
+    'home': '<path d="M8 24 L24 10 L40 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linejoin="round"/><path d="M13 22 V38 H35 V22" fill="none" stroke="#fff" stroke-width="3.5"/><rect x="21" y="28" width="7" height="10" fill="#F5C451"/>',
+    'land': '<path d="M6 36 L18 20 L26 30 L32 24 L42 36 Z" fill="#7FD3A0" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/><circle cx="34" cy="13" r="4" fill="#F5C451"/>',
+    'shop': '<path d="M9 18 H39 L36 10 H12 Z" fill="#F5C451" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/><path d="M11 18 V38 H37 V18" fill="none" stroke="#fff" stroke-width="3"/><rect x="20" y="27" width="8" height="11" fill="#fff"/>',
+    'bank': '<path d="M6 18 L24 8 L42 18 Z" fill="#fff"/><rect x="10" y="20" width="4" height="14" fill="#fff"/><rect x="19" y="20" width="4" height="14" fill="#fff"/><rect x="28" y="20" width="4" height="14" fill="#fff"/><rect x="36" y="20" width="3" height="14" fill="#fff"/><rect x="6" y="35" width="36" height="4" fill="#fff"/>',
+    'cart': '<path d="M6 10 H12 L16 30 H36 L40 16 H14" fill="none" stroke="#fff" stroke-width="3.2" stroke-linejoin="round"/><circle cx="18" cy="37" r="3" fill="#fff"/><circle cx="33" cy="37" r="3" fill="#fff"/>',
 }
 def icon(name, size=48):
     return f'<svg viewBox="0 0 48 48" width="{size}" height="{size}">{ICONS.get(name, ICONS["coin"])}</svg>'
@@ -56,7 +62,7 @@ def odo_chars(text, sid):
 def scene_html(i, s):
     k = s['kind']; sid = f's{i}'; e = html.escape
     if k == 'odometer':
-        fs = min(124, int(1500 / max(1, len(s['text']))))   # long words shrink to fit the panel
+        fs = min(124, int(1150 / max(1, len(s['text']))))   # long words shrink to fit the panel
         glints = ''.join(f'<i class="glint" style="left:{8 + (j * 23) % 84}%;top:{20 + (j * 37) % 60}%"></i>' for j in range(8))
         body = (f'<div class="lbl">{e(s.get("label", ""))}</div><div class="big" style="font-size:{fs}px">{odo_chars(s["text"], sid)}</div>{glints}'
                 + (f'<div class="sub2">{e(s.get("sub", ""))} <b>{e(s.get("key", ""))}</b></div>' if s.get('sub') or s.get('key') else ''))
@@ -92,8 +98,11 @@ def scene_html(i, s):
         st = f' style="height:{int(s["img_h"])}px"' if s.get('img_h') else ''   # one big screenshot: taller card
         cards = ''.join(f'<div class="ph p{j}"><img src="{e(src)}"{st}/>' + (f'<div>{e(cap)}</div>' if cap else '') + '</div>' for j, (src, cap) in enumerate(s['items']))
         lbl = f'<div class="lbl">{e(s.get("label", ""))}</div>' if s.get('label') else ''
-        if s.get('logo'): lbl = f'<div class="hdr">{logo_html(s)}{lbl}</div>'   # logo + label share one row
-        body = lbl + f'<div class="phs">{cards}</div>'
+        if s.get('logo') and s.get('logo_side'):   # logo beside the photo (big screenshot keeps its size)
+            body = lbl + f'<div class="hdr">{logo_html(s)}<div class="phs" style="margin-top:0">{cards}</div></div>'
+        else:
+            if s.get('logo'): lbl = f'<div class="hdr">{logo_html(s)}{lbl}</div>'   # logo + label share one row
+            body = lbl + f'<div class="phs">{cards}</div>'
     elif k == 'tags':
         tags = ''.join(f'<span class="tag t{j}">{e(t)}</span>' for j, t in enumerate(s['items']))
         body = f'<div class="pilltitle">{e(s["title"])}</div><div class="tags wrap">{tags}</div>'
@@ -232,7 +241,7 @@ def build(spec, out_dir):
     <meta name="viewport" content="width=1080, height=1920" />
     <script src="assets/gsap.min.js"></script>
     <style>
-      :root {{ --tint: rgba(110, 78, 52, 0.62); --key: #F5A623; --ok: #46B58C; --font: "Inter", "Montserrat", sans-serif; }}
+      :root {{ --tint: {P.get('tint', 'rgba(110, 78, 52, 0.62)')}; --key: #F5A623; --ok: #46B58C; --font: "Inter", "Montserrat", sans-serif; }}
       @font-face {{ font-family: "Inter"; src: url("assets/Inter.ttf"); font-weight: 100 900; }}
       @font-face {{ font-family: "Mono"; src: url("assets/JetBrainsMono-Bold.ttf"); }}
       * {{ margin: 0; padding: 0; box-sizing: border-box; }}
@@ -240,7 +249,7 @@ def build(spec, out_dir):
       #root {{ position: relative; width: 1080px; height: 1920px; font-family: var(--font); color: #fff; }}
       #vid {{ position: absolute; inset: 0; width: 1080px; height: 1920px; object-fit: cover; }}
       #panel {{ position: absolute; left: 70px; width: 880px; top: {H}px; height: {h}px; border-radius: 42px; opacity: 0;
-               background: linear-gradient(160deg, rgba(150,112,80,.72), var(--tint) 55%, rgba(80,56,38,.70));
+               background: {P.get('bg', 'linear-gradient(160deg, rgba(150,112,80,.72), var(--tint) 55%, rgba(80,56,38,.70))')};
                border: 2px solid rgba(255,255,255,.28); box-shadow: 0 18px 50px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.35);
                backdrop-filter: blur(22px) saturate(1.2); overflow: visible; }}
       #panel::after {{ content: ""; position: absolute; inset: 0; border-radius: 42px; pointer-events: none;
