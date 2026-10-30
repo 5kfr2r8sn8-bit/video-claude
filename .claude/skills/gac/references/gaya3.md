@@ -71,4 +71,9 @@ Kad di jalur atas kepala (y 225 hingga atas rambut − 20). Sari kata di paras d
   30 hari −3.67%, 6 bulan −13.11%, 1 tahun +0.41%, 5 tahun +125.76% (≈1,678), 20 tahun +566.82% (≈500).
   20 tahun +567% ≈ purata ±10% setahun (kompaun). Graf garis guna `xs` (kedudukan masa sebenar) + `labels`;
   bar turun/naik guna warna ke-4 (merah/hijau). Sentiasa tulis sumber + tarikh + "Prestasi lalu bukan jaminan".
+- **Rakaman skrin app** (pengguna upload ke release `Bahan1`): kaburkan baki gram sendiri (jadual "Available /
+  Purchase / End Available") ikut masa — cari kedudukan baris setiap 0.1 s (berubah bila papan kekunci naik),
+  `boxblur=26:4` atas jalur itu + jalur besar semasa peralihan. Lajukan supaya muat ayat (`setpts=PTS/1.36`).
+  Papar dalam bingkai telefon: `broll` `"video"` + `"phone": {"w": 520, "top": 150, "ratio": 2.17}` (atas latar sinar,
+  sari kata kekal di bawah, tiada label atas skrin app).
 - Contoh lengkap: Rakaman6 (`build/hf/r6g3/spec.json`, graf + kesan kamera), Rakaman5 (`build/hf/r5g3/spec.json`, semua jenis), Rakaman4 (`build/hf/r4g3/spec.json`).

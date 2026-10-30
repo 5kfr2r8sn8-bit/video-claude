@@ -28,7 +28,7 @@ B-roll (full screen, voice keeps playing):
   spec captions "box": "phrase" = dark box fitted to each phrase (no burned-in captions to hide)
   broll    {"video": "assets/clip.mp4" (optional, real B-roll), "video_y": -260 (lift the clip so the gold sits above the
             captions), "img_w": 640, "img_y": 560, "frame": false, "pill_y": 300, "tag_y": 400 (labels never on the product),
-            "images": ["assets/x.jpg", ...], "at": [..], "pill": "Akaun GAP", "pill_at": t,
+            "phone": {"w": 520, "top": 150, "ratio": 2.17} (screen recording in a phone frame), "images": ["assets/x.jpg", ...], "at": [..], "pill": "Akaun GAP", "pill_at": t,
             "logo": "assets/pg_logo.png", "logo_at": t, "tag": "Serendah RM100", "tag_at": t, "layout": "row"|"one"}
 """
 import json, os, sys, html, re
@@ -119,7 +119,7 @@ def broll_html(i, s):
     py = f' style="top:{int(s["pill_y"])}px"' if s.get('pill_y') else ''; ty = f' style="top:{int(s["tag_y"])}px"' if s.get('tag_y') else ''
     if s.get('pill'): extra += f'<div class="bpill"{py}>{e(s["pill"])}</div>'   # pill_y / tag_y: keep labels off the product
     if s.get('tag'): extra += f'<div class="btag"{ty}>{e(s["tag"])}</div>'
-    if s.get('video'):   # real B-roll clip underneath (root-level <video>): only a soft shade + labels here
+    if s.get('video') and not s.get('phone'):   # real B-roll clip underneath (root-level <video>): only a soft shade + labels here
         return f'<div class="broll vb" id="b{i}"><div class="bimgs {s.get("layout", "one")}"{iy}>{imgs}</div>{extra}</div>'
     return f'<div class="broll" id="b{i}"><div class="rays"></div><div class="bimgs {s.get("layout", "one")}"{iy}>{imgs}</div>{extra}</div>'
 
@@ -129,6 +129,7 @@ def card_js(i, s):
         sid = f'#b{i}'
         L.append(f'tl.fromTo("{sid}", {{opacity: 0}}, {{opacity: 1, duration: 0.2}}, {a});')
         L.append(f'tl.to("{sid}", {{opacity: 0, duration: 0.2}}, {b - 0.2});')
+        if s.get('phone'): L.append(f'tl.fromTo("{sid} .rays", {{rotation: 0}}, {{rotation: 14, duration: {b - a:.2f}, ease: "none"}}, {a});')
         if s.get('video'):
             L.append(f'tl.fromTo("#bv{i}", {{opacity: 0, scale: 1.04}}, {{opacity: 1, scale: 1, duration: 0.25}}, {a}); tl.to("#bv{i}", {{opacity: 0, duration: 0.2}}, {b - 0.2});')
         else:
@@ -298,7 +299,11 @@ def build(spec, out):
     sc = spec['scenes']; C = spec.get('captions', {})
     cards = '\n        '.join(card_html(i, s) for i, s in enumerate(sc) if s['kind'] not in ('broll', 'chart'))
     brolls = '\n        '.join(broll_html(i, s) if s['kind'] == 'broll' else chart_html(i, s) for i, s in enumerate(sc) if s['kind'] in ('broll', 'chart'))
-    bvids = '\n      '.join(f'<video id="bv{i}" class="clip bvid" style="top:{int(s.get("video_y", 0))}px" src="{e(s["video"])}" data-start="{s["t"][0]:.2f}" data-duration="{s["t"][1] - s["t"][0]:.2f}" data-track-index="{3 + i}" muted playsinline></video>'
+    def vstyle(s):   # "phone": {"w": 520, "top": 150} = screen recording in a phone frame on the gold-ray background
+        ph = s.get('phone')
+        if not ph: return f'top:{int(s.get("video_y", 0))}px'
+        w = ph.get('w', 520); h = int(w * ph.get('ratio', 2.1727)); return f'left:{(1080 - w) // 2}px;top:{ph.get("top", 150)}px;width:{w}px;height:{h}px'
+    bvids = '\n      '.join(f'<video id="bv{i}" class="clip bvid{" phone" if s.get("phone") else ""}" style="{vstyle(s)}" src="{e(s["video"])}" data-start="{s["t"][0]:.2f}" data-duration="{s["t"][1] - s["t"][0]:.2f}" data-track-index="{3 + i}" muted playsinline></video>'
                             for i, s in enumerate(sc) if s['kind'] == 'broll' and s.get('video'))
     js = '\n      '.join(chart_js(i, s) if s['kind'] == 'chart' else card_js(i, s) for i, s in enumerate(sc))
     js += '\n      ' + '\n      '.join(vfx_js(v) for v in spec.get('vfx', []))
@@ -375,6 +380,7 @@ def build(spec, out):
       .bimgs.one {{ top: 560px; }}
       .bi {{ border-radius: 28px; border: 5px solid rgba(255,255,255,.9); box-shadow: 0 24px 60px rgba(0,0,0,.6); object-fit: cover; }}
       .bvid {{ position: absolute; inset: 0; width: 1080px; height: 1920px; object-fit: cover; opacity: 0; }}
+      .bvid.phone {{ border: 14px solid #0d0d0d; border-radius: 64px; box-shadow: 0 30px 70px rgba(0,0,0,.65), 0 0 0 3px rgba(220,176,86,.6); z-index: 5; background: #fff; }}
       .broll.vb {{ background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,0) 22%, rgba(0,0,0,0) 66%, #0a0806 80%, #0a0806); }}
       .bi.free {{ border: none; border-radius: 0; box-shadow: none; filter: drop-shadow(0 26px 50px rgba(0,0,0,.6)); }}
       .cnt {{ font-size: 104px; display: flex; align-items: baseline; justify-content: center; gap: 8px; }} .cnt small {{ font-size: 54px; }}
