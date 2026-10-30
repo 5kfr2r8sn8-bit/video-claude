@@ -21,7 +21,8 @@ Card kinds (one card at a time, centred in the band; *word* = gold):
   cta      {"label": "MULAKAN SIMPANAN EMAS", "title": "bersama *Public Gold*", "pills": ["Isi borang sign up"], "at": [..]}
 B-roll (full screen, voice keeps playing):
   counter  {"label": "...", "from": 1, "to": 1000, "unit": "g", "sub": "1 KILOGRAM", "at": t, "dur": 1.6}   number rolls up
-  broll    {"video": "assets/clip.mp4" (optional, real B-roll), "img_w": 640, "frame": false,
+  broll    {"video": "assets/clip.mp4" (optional, real B-roll), "video_y": -260 (lift the clip so the gold sits above the
+            captions), "img_w": 640, "img_y": 560, "frame": false, "pill_y": 300, "tag_y": 400 (labels never on the product),
             "images": ["assets/x.jpg", ...], "at": [..], "pill": "Akaun GAP", "pill_at": t,
             "logo": "assets/pg_logo.png", "logo_at": t, "tag": "Serendah RM100", "tag_at": t, "layout": "row"|"one"}
 """
@@ -105,14 +106,16 @@ def card_html(i, s):
 
 def broll_html(i, s):
     st = f' style="width:{int(s["img_w"])}px"' if s.get('img_w') else ''
+    iy = f' style="top:{int(s["img_y"])}px"' if s.get('img_y') else ''
     imgs = ''.join(f'<img class="bi i{j}{"" if s.get("frame", True) else " free"}" src="{e(src)}"{st}/>' for j, src in enumerate(s.get('images', [])))
     extra = ''
     if s.get('logo'): extra += f'<div class="blogo"><img src="{e(s["logo"])}"/></div>'
-    if s.get('pill'): extra += f'<div class="bpill">{e(s["pill"])}</div>'
-    if s.get('tag'): extra += f'<div class="btag">{e(s["tag"])}</div>'
+    py = f' style="top:{int(s["pill_y"])}px"' if s.get('pill_y') else ''; ty = f' style="top:{int(s["tag_y"])}px"' if s.get('tag_y') else ''
+    if s.get('pill'): extra += f'<div class="bpill"{py}>{e(s["pill"])}</div>'   # pill_y / tag_y: keep labels off the product
+    if s.get('tag'): extra += f'<div class="btag"{ty}>{e(s["tag"])}</div>'
     if s.get('video'):   # real B-roll clip underneath (root-level <video>): only a soft shade + labels here
-        return f'<div class="broll vb" id="b{i}"><div class="bimgs {s.get("layout", "one")}">{imgs}</div>{extra}</div>'
-    return f'<div class="broll" id="b{i}"><div class="rays"></div><div class="bimgs {s.get("layout", "one")}">{imgs}</div>{extra}</div>'
+        return f'<div class="broll vb" id="b{i}"><div class="bimgs {s.get("layout", "one")}"{iy}>{imgs}</div>{extra}</div>'
+    return f'<div class="broll" id="b{i}"><div class="rays"></div><div class="bimgs {s.get("layout", "one")}"{iy}>{imgs}</div>{extra}</div>'
 
 def card_js(i, s):
     a, b = s['t']; k = s['kind']; L = []
@@ -193,7 +196,7 @@ def build(spec, out):
     sc = spec['scenes']; C = spec.get('captions', {})
     cards = '\n        '.join(card_html(i, s) for i, s in enumerate(sc) if s['kind'] != 'broll')
     brolls = '\n        '.join(broll_html(i, s) for i, s in enumerate(sc) if s['kind'] == 'broll')
-    bvids = '\n      '.join(f'<video id="bv{i}" class="clip bvid" src="{e(s["video"])}" data-start="{s["t"][0]:.2f}" data-duration="{s["t"][1] - s["t"][0]:.2f}" data-track-index="{3 + i}" muted playsinline></video>'
+    bvids = '\n      '.join(f'<video id="bv{i}" class="clip bvid" style="top:{int(s.get("video_y", 0))}px" src="{e(s["video"])}" data-start="{s["t"][0]:.2f}" data-duration="{s["t"][1] - s["t"][0]:.2f}" data-track-index="{3 + i}" muted playsinline></video>'
                             for i, s in enumerate(sc) if s['kind'] == 'broll' and s.get('video'))
     js = '\n      '.join(card_js(i, s) for i, s in enumerate(sc))
     cap_html, cap_js = '', []
@@ -260,7 +263,7 @@ def build(spec, out):
       .bimgs.one {{ top: 560px; }}
       .bi {{ border-radius: 28px; border: 5px solid rgba(255,255,255,.9); box-shadow: 0 24px 60px rgba(0,0,0,.6); object-fit: cover; }}
       .bvid {{ position: absolute; inset: 0; width: 1080px; height: 1920px; object-fit: cover; opacity: 0; }}
-      .broll.vb {{ background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,0) 30%, rgba(0,0,0,0) 62%, rgba(0,0,0,.45)); }}
+      .broll.vb {{ background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,0) 22%, rgba(0,0,0,0) 66%, #0a0806 80%, #0a0806); }}
       .bi.free {{ border: none; border-radius: 0; box-shadow: none; filter: drop-shadow(0 26px 50px rgba(0,0,0,.6)); }}
       .cnt {{ font-size: 104px; display: flex; align-items: baseline; justify-content: center; gap: 8px; }} .cnt small {{ font-size: 54px; }}
       .cntsub {{ display: inline-block; font-size: 26px; font-weight: 900; letter-spacing: .12em; color: #2a1600; padding: 6px 18px; border-radius: 12px; margin-top: 6px;

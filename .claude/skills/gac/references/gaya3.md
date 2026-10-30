@@ -58,6 +58,9 @@ Kad di jalur atas kepala (y 225 hingga atas rambut − 20). Sari kata di paras d
 - **B-roll video sebenar**: `broll` dengan `"video": "assets/klip.mp4"` (main senyap di bawah lapisan, label di atas).
   Kaunter gram atas B-roll: `counter` (`from`/`to`/`unit`/`sub`, `at` = bila disebut). Gambar telefon tanpa bingkai:
   `"frame": false, "img_w": 470` (`assets/ikon/telefon_app_gap.png`, latar putih dibuang).
+- **WAJIB: tulisan tidak menghalang produk (emas, telefon, wang)** — pengguna (Rakaman5). B-roll video: `"video_y": -260`
+  (emas naik atas kotak sari kata, bawah ditutup gelap); label pil di atas produk (`pill_y`/`tag_y` ±300–430) atau
+  di bawahnya; gambar `img_w` cukup kecil supaya berhenti sebelum kotak sari kata (y 1420).
 - Bahan terbaik daripada pengguna (Rakaman5): klip tangan pegang jongkong di cawangan, tangkapan skrin app GAP dalam
   telefon, gambar diri pegang 1kg, wang RM100 (guna separuh sahaja tanpa potret, atas latar sinar).
 - Contoh lengkap: Rakaman5 (`build/hf/r5g3/spec.json`, semua jenis), Rakaman4 (`build/hf/r4g3/spec.json`).
