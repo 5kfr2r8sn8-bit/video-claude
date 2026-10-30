@@ -1,0 +1,293 @@
+{
+ "video": "assets/cut.mp4",
+ "duration": 97.25,
+ "band": {
+  "top": 225,
+  "bottom": 405
+ },
+ "captions": {
+  "words": "words.json",
+  "y": 1428,
+  "h": 140,
+  "keys": [
+   "boros",
+   "emas",
+   "bank",
+   "aset",
+   "masa depan",
+   "jual",
+   "inflasi",
+   "disiplin",
+   "konsisten",
+   "GAP",
+   "Public Gold",
+   "RM100",
+   "hari ini",
+   "sign up",
+   "sedikit",
+   "promosi",
+   "reward"
+  ],
+  "fix": {}
+ },
+ "sfx_gain_db": -11,
+ "music_db": -12,
+ "scenes": [
+  {
+   "t": [
+    0.0,
+    9.9
+   ],
+   "kind": "title",
+   "label": "TIPS SIMPAN EMAS",
+   "title": "Simpan Emas, *Kawal Boros*"
+  },
+  {
+   "t": [
+    9.98,
+    19.95
+   ],
+   "kind": "chips",
+   "label": "BILA DUIT DALAM BANK",
+   "row": true,
+   "items": [
+    [
+     "",
+     "Barang cantik"
+    ],
+    [
+     "",
+     "Promosi"
+    ],
+    [
+     "",
+     "Check out"
+    ]
+   ],
+   "at": [
+    13.78,
+    15.88,
+    16.76
+   ]
+  },
+  {
+   "t": [
+    20.0,
+    26.25
+   ],
+   "kind": "chips",
+   "items": [
+    [
+     "x",
+     "Mudah berbelanja"
+    ],
+    [
+     "v",
+     "Fikir banyak kali"
+    ]
+   ],
+   "at": [
+    20.3,
+    23.9
+   ]
+  },
+  {
+   "t": [
+    26.32,
+    30.45
+   ],
+   "kind": "big",
+   "label": "SEBAB EMAS ITU",
+   "text": "ASET",
+   "sub": "untuk *masa depan*",
+   "sub_at": 29.6
+  },
+  {
+   "t": [
+    30.56,
+    35.4
+   ],
+   "kind": "broll",
+   "images": [
+    "assets/p_10g.jpg",
+    "assets/p_1000g.jpg",
+    "assets/p_100g.jpg"
+   ],
+   "at": [
+    30.75,
+    31.8,
+    33.3
+   ],
+   "layout": "row",
+   "pill": "Boleh tengok · boleh pegang",
+   "pill_at": 31.9
+  },
+  {
+   "t": [
+    35.46,
+    41.25
+   ],
+   "kind": "title",
+   "label": "BUKAN TAK BOLEH JUAL",
+   "title": "Jual Bila *Benar-benar Perlu*",
+   "size": 62
+  },
+  {
+   "t": [
+    41.32,
+    47.9
+   ],
+   "kind": "gold",
+   "label": "MATLAMAT BESAR",
+   "items": [
+    [
+     "Rumah"
+    ],
+    [
+     "Tanah"
+    ],
+    [
+     "Perniagaan"
+    ]
+   ],
+   "at": [
+    45.2,
+    45.85,
+    46.55
+   ]
+  },
+  {
+   "t": [
+    49.9,
+    54.6
+   ],
+   "kind": "big",
+   "label": "BERPOTENSI LINDUNGI DARIPADA",
+   "text": "INFLASI",
+   "sub": "dalam *jangka panjang*",
+   "sub_at": 53.6
+  },
+  {
+   "t": [
+    54.72,
+    58.1
+   ],
+   "kind": "chips",
+   "items": [
+    [
+     "v",
+     "Latih diri *tidak boros*"
+    ]
+   ],
+   "at": [
+    55.7
+   ]
+  },
+  {
+   "t": [
+    58.22,
+    61.9
+   ],
+   "kind": "warn",
+   "text": "Duit mudah bocor?"
+  },
+  {
+   "t": [
+    61.96,
+    66.7
+   ],
+   "kind": "title",
+   "label": "MUNGKIN SUDAH TIBA MASANYA",
+   "title": "Tukar *Sebahagian* Duit ke Emas",
+   "size": 58
+  },
+  {
+   "t": [
+    66.78,
+    72.55
+   ],
+   "kind": "chips",
+   "label": "TAK PERLU TUKAR SEMUA",
+   "row": true,
+   "items": [
+    [
+     "v",
+     "Wang tunai harian"
+    ],
+    [
+     "v",
+     "Dana kecemasan"
+    ]
+   ],
+   "at": [
+    69.0,
+    71.45
+   ]
+  },
+  {
+   "t": [
+    72.68,
+    77.95
+   ],
+   "kind": "bars",
+   "text": "KONSISTEN",
+   "sub": "Bukan cepat kaya, tapi *disiplin* menyimpan",
+   "sub_at": 74.6
+  },
+  {
+   "t": [
+    78.02,
+    81.0
+   ],
+   "kind": "title",
+   "label": "MULA SIMPAN",
+   "title": "Sedikit *Demi* Sedikit"
+  },
+  {
+   "t": [
+    81.06,
+    85.12
+   ],
+   "kind": "broll",
+   "images": [
+    "assets/gap_card.jpg"
+   ],
+   "at": [
+    81.5
+   ],
+   "layout": "one",
+   "logo": "assets/pg_logo.png",
+   "logo_at": 82.56,
+   "pill": "Akaun GAP Public Gold",
+   "pill_at": 82.2,
+   "tag": "Serendah RM100",
+   "tag_at": 84.3
+  },
+  {
+   "t": [
+    85.18,
+    89.2
+   ],
+   "kind": "title",
+   "title": "Mula *Hari Ini*",
+   "sub": "walaupun sedikit",
+   "sub_at": 88.0,
+   "size": 86
+  },
+  {
+   "t": [
+    89.32,
+    97.25
+   ],
+   "kind": "cta",
+   "label": "MULAKAN SIMPANAN EMAS",
+   "title": "Saya *bantu & bimbing*",
+   "pills": [
+    "Isi borang sign up"
+   ],
+   "at": [
+    92.2
+   ]
+  }
+ ]
+}
