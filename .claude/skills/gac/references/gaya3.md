@@ -63,4 +63,8 @@ Kad di jalur atas kepala (y 225 hingga atas rambut − 20). Sari kata di paras d
   di bawahnya; gambar `img_w` cukup kecil supaya berhenti sebelum kotak sari kata (y 1420).
 - Bahan terbaik daripada pengguna (Rakaman5): klip tangan pegang jongkong di cawangan, tangkapan skrin app GAP dalam
   telefon, gambar diri pegang 1kg, wang RM100 (guna separuh sahaja tanpa potret, atas latar sinar).
-- Contoh lengkap: Rakaman5 (`build/hf/r5g3/spec.json`, semua jenis), Rakaman4 (`build/hf/r4g3/spec.json`).
+- **Kesan daripada pustaka 20 kesan (dalam HyperFrames, Rakaman6):** `chart` (graf donut / garis / bar, cutaway
+  skrin penuh), `vfx` snap zoom (`snap`), digital zoom (`push`), zoom-through cut (`through` pada titik potong),
+  checklist (`chips`), B-roll / telefon. Ayat ada nombor → buat graf; tandakan "Ilustrasi" bila bukan data sebenar
+  dan "Prestasi lalu bukan jaminan masa depan" untuk pulangan. Pengguna minta: pilih kesan yang sesuai sahaja.
+- Contoh lengkap: Rakaman6 (`build/hf/r6g3/spec.json`, graf + kesan kamera), Rakaman5 (`build/hf/r5g3/spec.json`, semua jenis), Rakaman4 (`build/hf/r4g3/spec.json`).

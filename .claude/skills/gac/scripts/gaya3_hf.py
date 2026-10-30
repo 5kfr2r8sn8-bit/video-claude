@@ -21,6 +21,11 @@ Card kinds (one card at a time, centred in the band; *word* = gold):
   cta      {"label": "MULAKAN SIMPANAN EMAS", "title": "bersama *Public Gold*", "pills": ["Isi borang sign up"], "at": [..]}
 B-roll (full screen, voice keeps playing):
   counter  {"label": "...", "from": 1, "to": 1000, "unit": "g", "sub": "1 KILOGRAM", "at": t, "dur": 1.6}   number rolls up
+  chart    {"type": "line"|"bar"|"donut", "label", "title", "note", full-screen graph cutaway:
+            line: "series": [{"name", "color", "points": [..], "dashed"}], "xlabels", "at" (draw start per series)
+            bar: "bars": [["2 tahun", "+20%", 20], ...], "at"; donut: "center", "center_sub", "steps": [[t, pct], ...]}
+  spec "vfx": [{"type": "snap", "t": [a, b], "to": 1.2}, {"type": "push", "t": [a, b], "to": 1.12}, {"type": "through", "t": cut}]
+  spec captions "box": "phrase" = dark box fitted to each phrase (no burned-in captions to hide)
   broll    {"video": "assets/clip.mp4" (optional, real B-roll), "video_y": -260 (lift the clip so the gold sits above the
             captions), "img_w": 640, "img_y": 560, "frame": false, "pill_y": 300, "tag_y": 400 (labels never on the product),
             "images": ["assets/x.jpg", ...], "at": [..], "pill": "Akaun GAP", "pill_at": t,
@@ -168,11 +173,100 @@ def card_js(i, s):
             L.append(f'tl.to("{sid} .p{j}", {{y: -6, duration: 0.45, repeat: 5, yoyo: true, ease: "sine.inOut"}}, {t0 + 0.4});')
     return '\n      '.join(L)
 
+def chart_html(i, s):
+    """Full-screen chart cutaway (dark gold background): line / bar / donut. Coordinates in a 900x600 box."""
+    ty = s['type']; W_, H_ = 900, 600; svg = ''
+    if ty == 'line':
+        xs = s.get('xlabels', [])
+        for j, ser in enumerate(s['series']):
+            pts = ser['points']; n = len(pts); lo, hi = s.get('ymin', 0), s.get('ymax', max(max(x['points']) for x in s['series']) * 1.1)
+            P = [(60 + k * (W_ - 120) / (n - 1), H_ - 70 - (v - lo) / (hi - lo) * (H_ - 140)) for k, v in enumerate(pts)]
+            d = 'M' + ' L'.join(f'{x:.1f},{y:.1f}' for x, y in P)
+            L = sum(((P[k + 1][0] - P[k][0]) ** 2 + (P[k + 1][1] - P[k][1]) ** 2) ** .5 for k in range(n - 1))
+            dash = ' stroke-dasharray="14 12"' if ser.get('dashed') else ''
+            if j == 0 and s.get('fill', True):
+                svg += f'<path class="area" d="{d} L{P[-1][0]:.1f},{H_ - 70} L{P[0][0]:.1f},{H_ - 70} Z" fill="url(#gfill{i})" opacity="0"/>'
+            svg += (f'<path class="ln l{j}" d="{d}" fill="none" stroke="{ser.get("color", "#F2C14E")}" stroke-width="{ser.get("width", 9)}" stroke-linecap="round" stroke-linejoin="round"'
+                    f' data-len="{L:.0f}" style="stroke-dasharray:{L:.0f};stroke-dashoffset:{L:.0f}"/>')
+            if dash: svg += f'<path class="ln2 l{j}b" d="{d}" fill="none" stroke="#0f0c08" stroke-width="{ser.get("width", 9) + 2}"{dash} opacity="0"/>'
+            svg += f'<circle class="dot d{j}" cx="{P[-1][0]:.1f}" cy="{P[-1][1]:.1f}" r="13" fill="{ser.get("color", "#F2C14E")}" stroke="#fff" stroke-width="4" opacity="0"/>'
+        svg += f'<line x1="60" y1="{H_ - 70}" x2="{W_ - 60}" y2="{H_ - 70}" stroke="rgba(255,255,255,.35)" stroke-width="3"/>'
+        for k, x in enumerate(xs):
+            anc = 'start' if k == 0 else ('end' if k == len(xs) - 1 else 'middle')   # edge labels stay inside the box
+            svg += f'<text x="{60 + k * (W_ - 120) / max(1, len(xs) - 1):.0f}" y="{H_ - 25}" fill="rgba(255,255,255,.8)" font-size="30" font-weight="700" text-anchor="{anc}" font-family="Mont">{e(x)}</text>'
+        legend = ''.join(f'<span class="lg"><i style="background:{x.get("color", "#F2C14E")}"></i>{e(x["name"])}</span>' for x in s['series'] if x.get('name'))
+        body = f'<svg viewBox="0 0 {W_} {H_}" width="{W_}" height="{H_}"><defs><linearGradient id="gfill{i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2C14E" stop-opacity=".45"/><stop offset="1" stop-color="#F2C14E" stop-opacity="0"/></linearGradient></defs>{svg}</svg><div class="legend">{legend}</div>'
+    elif ty == 'bar':
+        bars = s['bars']; n = len(bars); mx = max(b[2] for b in bars); bw = min(220, (W_ - 120) / n - 60)
+        for k, (lab, val, v) in enumerate(bars):
+            x = 60 + (k + .5) * (W_ - 120) / n - bw / 2; h = v / mx * (H_ - 190); y = H_ - 70 - h
+            svg += (f'<g class="bar b{k}"><rect x="{x:.0f}" y="{y:.0f}" width="{bw:.0f}" height="{h:.0f}" rx="18" fill="url(#gbar{i})"/>'
+                    f'<text x="{x + bw / 2:.0f}" y="{y - 22:.0f}" fill="#F2C14E" font-size="64" font-weight="900" text-anchor="middle" font-family="Mont">{e(val)}</text></g>'
+                    f'<text x="{x + bw / 2:.0f}" y="{H_ - 22}" fill="#fff" font-size="34" font-weight="800" text-anchor="middle" font-family="Mont">{e(lab)}</text>')
+        svg += f'<line x1="40" y1="{H_ - 70}" x2="{W_ - 40}" y2="{H_ - 70}" stroke="rgba(255,255,255,.35)" stroke-width="3"/>'
+        body = f'<svg viewBox="0 0 {W_} {H_}" width="{W_}" height="{H_}"><defs><linearGradient id="gbar{i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE7A0"/><stop offset=".55" stop-color="#F2C14E"/><stop offset="1" stop-color="#B98018"/></linearGradient></defs>{svg}</svg>'
+    elif ty == 'donut':
+        r = 200; C_ = 2 * 3.14159 * r
+        svg = (f'<circle cx="450" cy="300" r="{r}" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="70"/>'
+               f'<circle class="seg" cx="450" cy="300" r="{r}" fill="none" stroke="url(#gd{i})" stroke-width="70" stroke-linecap="butt"'
+               f' transform="rotate(-90 450 300)" data-c="{C_:.1f}" style="stroke-dasharray:0 {C_:.1f}"/>'
+               f'<text x="450" y="318" fill="#fff" font-size="96" font-weight="900" text-anchor="middle" font-family="Mont" class="dc">{e(s.get("center", ""))}</text>'
+               f'<text x="450" y="372" fill="#F2C14E" font-size="30" font-weight="800" text-anchor="middle" font-family="Mont" letter-spacing="4">{e(s.get("center_sub", ""))}</text>')
+        body = f'<svg viewBox="0 0 900 600" width="900" height="600"><defs><linearGradient id="gd{i}"><stop offset="0" stop-color="#FFE7A0"/><stop offset="1" stop-color="#D49B2A"/></linearGradient></defs>{svg}</svg>'
+    head = (f'<div class="chead">' + (f'<div class="lbl">{e(s["label"])}</div>' if s.get('label') else '')
+            + (f'<div class="serif" style="font-size:{s.get("size", 64)}px">{gold_words(s["title"])}</div>' if s.get('title') else '') + '</div>')
+    note = f'<div class="cnote">{e(s["note"])}</div>' if s.get('note') else ''
+    return f'<div class="broll chart" id="b{i}"><div class="rays"></div>{head}<div class="cbox">{body}</div>{note}</div>'
+
+def chart_js(i, s):
+    a, b = s['t']; sid = f'#b{i}'; L = []; ty = s['type']
+    L.append(f'tl.fromTo("{sid}", {{opacity: 0}}, {{opacity: 1, duration: 0.2}}, {a}); tl.to("{sid}", {{opacity: 0, duration: 0.2}}, {b - 0.2});')
+    L.append(f'tl.fromTo("{sid} .rays", {{rotation: 0}}, {{rotation: 12, duration: {b - a:.2f}, ease: "none"}}, {a});')
+    L.append(f'tl.fromTo("{sid} .chead", {{opacity: 0, y: -20}}, {{opacity: 1, y: 0, duration: 0.3}}, {a + 0.1});')
+    at = s.get('at') or []
+    if ty == 'line':
+        for j, ser in enumerate(s['series']):
+            t0 = at[j] if j < len(at) else a + 0.4 + j * 0.6; dur = s.get('dur', 1.6)
+            L.append(f'tl.to("{sid} .l{j}", {{strokeDashoffset: 0, duration: {dur}, ease: "power1.inOut"}}, {t0});')
+            if ser.get('dashed'): L.append(f'tl.to("{sid} .l{j}b", {{opacity: 1, duration: 0.01}}, {t0 + dur});')
+            L.append(f'tl.fromTo("{sid} .d{j}", {{opacity: 0, scale: 0, transformOrigin: "50% 50%"}}, {{opacity: 1, scale: 1, duration: 0.25, ease: "back.out(3)"}}, {t0 + dur});')
+        if s.get('fill', True): L.append(f'tl.to("{sid} .area", {{opacity: 1, duration: 0.6}}, {(at[0] if at else a + 0.4) + 0.6});')
+    elif ty == 'bar':
+        for k in range(len(s['bars'])):
+            t0 = at[k] if k < len(at) else a + 0.4 + k * 0.6
+            L.append(f'tl.fromTo("{sid} .b{k}", {{scaleY: 0, opacity: 0, transformOrigin: "50% 100%"}}, {{scaleY: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)"}}, {t0});')
+    elif ty == 'donut':
+        C_ = 2 * 3.14159 * 200; steps = s.get('steps', [[a + 0.4, 30]])
+        for t0, pct in steps:
+            L.append(f'tl.to("{sid} .seg", {{attr: {{style: "stroke-dasharray:{C_ * pct / 100:.1f} {C_:.1f}"}}, duration: 0.6, ease: "power2.out"}}, {t0});')
+    if s.get('note'): L.append(f'tl.fromTo("{sid} .cnote", {{opacity: 0}}, {{opacity: 1, duration: 0.3}}, {s.get("note_at", a + 0.8)});')
+    return '\n      '.join(L)
+
+def vfx_js(v):
+    """Camera moves on the speaker video: snap zoom, slow digital push, zoom-through cut."""
+    ty = v['type']
+    if ty == 'snap':
+        a, b = v['t']; z = v.get('to', 1.2)
+        return f'tl.to("#vid", {{scale: {z}, duration: 0.12, ease: "power3.out"}}, {a}); tl.to("#vid", {{scale: 1, duration: 0.18, ease: "power2.inOut"}}, {b});'
+    if ty == 'push':
+        a, b = v['t']; z = v.get('to', 1.12)
+        return f'tl.to("#vid", {{scale: {z}, duration: {b - a - 0.2:.2f}, ease: "none"}}, {a}); tl.to("#vid", {{scale: 1, duration: 0.2, ease: "power2.out"}}, {b - 0.2});'
+    if ty == 'through':
+        t = v['t']
+        return (f'tl.to("#vid", {{scale: 1.45, filter: "blur(14px) brightness(1.25)", duration: 0.16, ease: "power2.in"}}, {t - 0.16});'
+                f' tl.fromTo("#vid", {{scale: 1.45, filter: "blur(14px) brightness(1.25)"}}, {{scale: 1, filter: "blur(0px) brightness(1)", duration: 0.24, ease: "power2.out", immediateRender: false}}, {t});')
+    raise SystemExit(f'unknown vfx {ty}')
+
 def sfx_events(sc):
     ev = []
     for i, s in enumerate(sc):
         a, b = s['t']; k = s['kind']; at = s.get('at') or []
         if i == 0: ev.append((a + 0.1, 'shimmer', -2))
+        if k == 'chart':
+            ev += [(a, 'whoosh', 0), (a + 0.05, 'boom', -7)]
+            ts = [x[0] for x in s.get('steps', [])] if s['type'] == 'donut' else (at or [a + 0.4])
+            for t0 in ts: ev += [(t0 + j * 0.16, 'tick', -9) for j in range(6)] + [(t0 + (1.0 if s['type'] == 'line' else 0.5), 'coin', -4)]
+            continue
         if k == 'broll':
             ev += [(a, 'whoosh', 0), (a + 0.05, 'boom', -6)]
             ev += [(t, 'pop', -2) for t in at]
@@ -194,11 +288,12 @@ def sfx_events(sc):
 def build(spec, out):
     D = spec['duration']; B = spec.get('band', {}); top, bot = B.get('top', 225), B.get('bottom', 405)
     sc = spec['scenes']; C = spec.get('captions', {})
-    cards = '\n        '.join(card_html(i, s) for i, s in enumerate(sc) if s['kind'] != 'broll')
-    brolls = '\n        '.join(broll_html(i, s) for i, s in enumerate(sc) if s['kind'] == 'broll')
+    cards = '\n        '.join(card_html(i, s) for i, s in enumerate(sc) if s['kind'] not in ('broll', 'chart'))
+    brolls = '\n        '.join(broll_html(i, s) if s['kind'] == 'broll' else chart_html(i, s) for i, s in enumerate(sc) if s['kind'] in ('broll', 'chart'))
     bvids = '\n      '.join(f'<video id="bv{i}" class="clip bvid" style="top:{int(s.get("video_y", 0))}px" src="{e(s["video"])}" data-start="{s["t"][0]:.2f}" data-duration="{s["t"][1] - s["t"][0]:.2f}" data-track-index="{3 + i}" muted playsinline></video>'
                             for i, s in enumerate(sc) if s['kind'] == 'broll' and s.get('video'))
-    js = '\n      '.join(card_js(i, s) for i, s in enumerate(sc))
+    js = '\n      '.join(chart_js(i, s) if s['kind'] == 'chart' else card_js(i, s) for i, s in enumerate(sc))
+    js += '\n      ' + '\n      '.join(vfx_js(v) for v in spec.get('vfx', []))
     cap_html, cap_js = '', []
     if C.get('words'):
         words = json.load(open(os.path.join(out, C['words'])))
@@ -206,7 +301,10 @@ def build(spec, out):
             if a >= D: continue
             cap_html += f'<div class="cap" id="k{j}"><span>{mark_key(t, C.get("keys", []))}</span></div>'
             cap_js.append(f'tl.fromTo("#k{j}", {{opacity: 0, y: 10, scale: 0.96}}, {{opacity: 1, y: 0, scale: 1, duration: 0.12, ease: "power2.out"}}, {a:.2f}); tl.to("#k{j}", {{opacity: 0, duration: 0.06}}, {min(b, D) - 0.06:.2f});')
-    cy, ch = C.get('y', 1428), C.get('h', 140)
+    cy, ch = C.get('y', 1428), C.get('h', 140); phrase_box = C.get('box') == 'phrase'
+    capbox = '' if phrase_box else '<div id="capbox"></div>'
+    capcss = ('.cap span { background: rgba(18,14,10,.62); padding: 6px 26px 10px; border-radius: 18px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }'
+              if phrase_box else '')
     doc = f'''<!doctype html>
 <html lang="ms">
   <head>
@@ -219,7 +317,12 @@ def build(spec, out):
       * {{ margin: 0; padding: 0; box-sizing: border-box; }}
       html, body {{ width: 1080px; height: 1920px; overflow: hidden; background: #000; }}
       #root {{ position: relative; width: 1080px; height: 1920px; font-family: "Mont", sans-serif; color: #fff; }}
-      #vid {{ position: absolute; inset: 0; width: 1080px; height: 1920px; object-fit: cover; }}
+      #vid {{ position: absolute; inset: 0; width: 1080px; height: 1920px; object-fit: cover; transform-origin: 50% 30%; }}
+      .chart .chead {{ position: absolute; left: 60px; right: 60px; top: 300px; text-align: center; }}
+      .chart .cbox {{ position: absolute; left: 90px; top: 560px; width: 900px; height: 600px; }}
+      .chart .legend {{ display: flex; gap: 28px; justify-content: center; margin-top: 8px; font-size: 30px; font-weight: 700; }}
+      .chart .lg i {{ display: inline-block; width: 34px; height: 10px; border-radius: 5px; margin-right: 10px; vertical-align: middle; }}
+      .chart .cnote {{ position: absolute; left: 80px; right: 80px; top: 1215px; text-align: center; font-size: 26px; font-style: italic; opacity: .85; }}
       #layer {{ position: absolute; inset: 0; }}
       .g {{ color: #F2C14E; font-weight: inherit; }}
       .card {{ position: absolute; left: 50%; top: {(top + bot) / 2}px; transform: translate(-50%, -50%); opacity: 0; max-width: 940px; width: max-content;
@@ -256,6 +359,7 @@ def build(spec, out):
                 backdrop-filter: blur(20px); background: rgba(22,18,14,.62); box-shadow: 0 8px 26px rgba(0,0,0,.3); }}
       .cap {{ position: absolute; left: 70px; right: 70px; top: {cy}px; height: {ch}px; display: flex; align-items: center; justify-content: center; text-align: center;
              font-size: 54px; font-weight: 800; line-height: 1.15; opacity: 0; text-shadow: 0 3px 10px rgba(0,0,0,.5); }}
+      {capcss}
       .broll {{ position: absolute; inset: 0; opacity: 0; overflow: hidden; background: radial-gradient(circle at 50% 42%, #3d2c12 0%, #160f07 55%, #070504 100%); }}
       .rays {{ position: absolute; left: -50%; top: -30%; width: 200%; height: 160%;
               background: repeating-conic-gradient(from 0deg at 50% 45%, rgba(255,200,90,.07) 0deg 5deg, rgba(0,0,0,0) 5deg 13deg); }}
@@ -284,7 +388,7 @@ def build(spec, out):
       <audio id="sfx" class="clip" src="assets/sfx.wav" data-start="0" data-duration="{D:.3f}" data-track-index="1"></audio>
       <div id="layer" class="clip" data-start="0" data-duration="{D:.3f}" data-track-index="2">
         {brolls}
-        <div id="capbox"></div>
+        {capbox}
         {cap_html}
         {cards}
       </div>
@@ -304,7 +408,11 @@ def build(spec, out):
     os.makedirs(os.path.join(out, 'assets'), exist_ok=True)
     open(os.path.join(out, 'index.html'), 'w').write(doc)
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import sfx
-    sfx.render_track(sorted(sfx_events(sc)), D, os.path.join(out, 'assets', 'sfx.wav'), spec.get('sfx_gain_db', -11), spec.get('music_db'))
+    ev = sfx_events(sc)
+    for v in spec.get('vfx', []):
+        if v['type'] == 'snap': ev.append((v['t'][0], 'hit', -3))
+        if v['type'] == 'through': ev.append((v['t'] - 0.2, 'whoosh', 0))
+    sfx.render_track(sorted(ev), D, os.path.join(out, 'assets', 'sfx.wav'), spec.get('sfx_gain_db', -11), spec.get('music_db'))
 
 if __name__ == '__main__':
     build(json.load(open(sys.argv[1])), sys.argv[2])
