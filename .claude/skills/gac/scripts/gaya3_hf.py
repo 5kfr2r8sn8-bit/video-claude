@@ -45,7 +45,8 @@ def phrases(words, fix, maxc=26, gap=0.3):
         cur.append((txt, w['s'], w['e']))
         nxt = words[i + 1] if i + 1 < len(words) else None
         n = len(' '.join(c[0] for c in cur))
-        if nxt is None or txt[-1:] in ',.?!' or nxt['s'] - w['e'] > gap or n > maxc:
+        new_sent = nxt is not None and nxt['w'][:1].isupper() and nxt['w'].strip(',.') not in ('Public', 'Gold', 'GAP', 'Gold,', 'RM100')   # missed full stop
+        if nxt is None or txt[-1:] in ',.?!' or nxt['s'] - w['e'] > gap or n > maxc or new_sent:
             out.append(cur); cur = []
     res = []
     for k, p in enumerate(out):
@@ -303,7 +304,7 @@ def build(spec, out):
             cap_js.append(f'tl.fromTo("#k{j}", {{opacity: 0, y: 10, scale: 0.96}}, {{opacity: 1, y: 0, scale: 1, duration: 0.12, ease: "power2.out"}}, {a:.2f}); tl.to("#k{j}", {{opacity: 0, duration: 0.06}}, {min(b, D) - 0.06:.2f});')
     cy, ch = C.get('y', 1428), C.get('h', 140); phrase_box = C.get('box') == 'phrase'
     capbox = '' if phrase_box else '<div id="capbox"></div>'
-    capcss = ('.cap span { background: rgba(18,14,10,.62); padding: 6px 26px 10px; border-radius: 18px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }'
+    capcss = ('.cap span { background: rgba(18,14,10,.74); padding: 6px 26px 10px; border-radius: 18px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }'
               if phrase_box else '')
     doc = f'''<!doctype html>
 <html lang="ms">
@@ -358,7 +359,7 @@ def build(spec, out):
       #capbox {{ position: absolute; left: 50px; right: 50px; top: {cy}px; height: {ch}px; border-radius: 26px;
                 backdrop-filter: blur(20px); background: rgba(22,18,14,.62); box-shadow: 0 8px 26px rgba(0,0,0,.3); }}
       .cap {{ position: absolute; left: 70px; right: 70px; top: {cy}px; height: {ch}px; display: flex; align-items: center; justify-content: center; text-align: center;
-             font-size: 54px; font-weight: 800; line-height: 1.15; opacity: 0; text-shadow: 0 3px 10px rgba(0,0,0,.5); }}
+             font-size: {C.get('size', 54)}px; font-weight: 800; line-height: 1.15; opacity: 0; text-shadow: 0 3px 10px rgba(0,0,0,.5); }}
       {capcss}
       .broll {{ position: absolute; inset: 0; opacity: 0; overflow: hidden; background: radial-gradient(circle at 50% 42%, #3d2c12 0%, #160f07 55%, #070504 100%); }}
       .rays {{ position: absolute; left: -50%; top: -30%; width: 200%; height: 160%;
