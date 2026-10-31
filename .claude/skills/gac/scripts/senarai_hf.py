@@ -8,6 +8,7 @@ spec = {
   "items": [["Buat *bajet* setiap kali dapat gaji.", "wallet"], ...],      # *word* = gold
   "outro": "Mana satu awak *dah buat*?", "outro_sub": "Simpan & kongsi dengan kawan",
   "bg": ["assets/a.mp4", "assets/b.mp4"],                                # B-roll, played one after another (blurred)
+  "bg_blur": 9, "bg_dim": 0.55, "shade": 0.75,                                          # own scenic footage: less blur (3) so it shows
   "intro": 3.6, "per_item": [2.4, 0.035], "outro_dur": 3.4, "music_db": -12, "sfx_gain_db": -10
 }
 per_item = [base seconds, extra seconds per character]: longer tips stay longer.
@@ -83,8 +84,8 @@ def build(spec, out):
       * {{ margin: 0; padding: 0; box-sizing: border-box; }}
       html, body {{ width: 1080px; height: 1920px; overflow: hidden; background: #0b0805; }}
       #root {{ position: relative; width: 1080px; height: 1920px; font-family: "Mont", sans-serif; color: #fff; overflow: hidden; }}
-      .bg {{ position: absolute; inset: 0; width: 1080px; height: 1920px; object-fit: cover; filter: blur(9px) brightness(.55) saturate(1.1); }}
-      #shade {{ position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, rgba(40,28,10,.15), rgba(8,6,4,.75) 75%); }}
+      .bg {{ position: absolute; inset: 0; width: 1080px; height: 1920px; object-fit: cover; filter: blur({spec.get('bg_blur', 9)}px) brightness({spec.get('bg_dim', .55)}) saturate(1.1); }}
+      #shade {{ position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, rgba(40,28,10,.10), rgba(8,6,4,{spec.get('shade', .75)}) 75%); }}
       #ui {{ position: absolute; inset: 0; }}
       .g {{ color: #F2C14E; background-image: linear-gradient(transparent 62%, rgba(242,193,78,.28) 62%); background-repeat: no-repeat; background-size: 0% 100%; }}
       #intro {{ position: absolute; left: 80px; right: 140px; top: 520px; text-align: center; }}

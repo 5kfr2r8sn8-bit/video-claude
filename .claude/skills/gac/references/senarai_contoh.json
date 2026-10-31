@@ -47,14 +47,15 @@
  "outro": "Mana satu awak *dah buat*?",
  "outro_sub": "Simpan & kongsi dengan kawan",
  "bg": [
-  "assets/gaji.mp4",
-  "assets/broll_bar.mp4",
-  "assets/broll_1kg.mp4"
+  "assets/kl.mp4"
  ],
  "intro": 3.6,
  "per_item": [
   2.0,
   0.032
  ],
- "outro_dur": 3.4
+ "outro_dur": 3.4,
+ "bg_blur": 3,
+ "bg_dim": 0.85,
+ "shade": 0.5
 }
