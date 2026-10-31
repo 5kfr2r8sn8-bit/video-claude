@@ -12,6 +12,7 @@ spec = {
   "intro": 3.6, "per_item": [2.4, 0.035], "outro_dur": 3.4, "music_db": -12, "sfx_gain_db": -10
 }
 per_item = [base seconds, extra seconds per character]: longer tips stay longer.
+"mode": "list" = one light frosted frame holding the whole list (items appear and stay, current one highlighted).
 No voice = quiet track: after rendering run loudnorm=I=-15:TP=-1.5 on the audio (music-only videos measured -26.6 LUFS).
 Icons: wallet, food, home, gift, clock, bag, scale, laptop, coins, card."""
 import json, os, re, sys, html, subprocess
@@ -151,5 +152,94 @@ def build(spec, out):
     sfx.render_track(sorted(ev), D, os.path.join(out, 'assets', 'sfx.wav'), spec.get('sfx_gain_db', -10), spec.get('music_db', -12))
     print('ok', out, 'tempoh', D)
 
+def build_list(spec, out):
+    """mode "list": ONE frame holding the whole list (gaya nota). Items appear one by one and stay; the one being
+    read is highlighted. Light frosted glass card with a gold edge over the background clip."""
+    items = spec['items']; n = len(items); t0 = spec.get('intro', 2.4); spans = []; t = t0
+    for txt, _ in items:
+        d = spec.get('per_item', [2.0, 0.032]); d = d[0] + d[1] * len(txt.replace('*', '')); spans.append((t, t + d)); t += d
+    o0 = t; D = round(t + spec.get('outro_dur', 4.0), 2)
+    bg = spec.get('bg', []); seg = D / max(1, len(bg))
+    bgs = ''.join(f'<video id="bg{k}" class="clip bg" src="{e(src)}" data-start="{k * seg:.2f}" data-duration="{seg + 0.4:.2f}" data-track-index="{k}" muted playsinline></video>' for k, src in enumerate(bg))
+    rows = ''.join(f'<div class="it" id="i{k}"><span class="n">{k + 1}</span><span class="tx">{gold(txt)}</span></div>' for k, (txt, _) in enumerate(items))
+    js = [f'tl.fromTo("#bg{k}", {{scale: 1.06}}, {{scale: 1.14, duration: {seg + 0.4:.2f}, ease: "none"}}, {k * seg:.2f});' for k in range(len(bg))]
+    js.append('tl.fromTo("#card", {opacity: 0, y: 80, scale: 0.94}, {opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "power3.out"}, 0.15);')
+    js.append('tl.fromTo("#card .lbl", {opacity: 0, y: -10}, {opacity: 1, y: 0, duration: 0.5}, 0.45);')
+    js.append('tl.fromTo("#card .sub", {opacity: 0}, {opacity: 1, duration: 0.4}, 1.0);')
+    js.append('tl.fromTo("#card .w", {opacity: 0, y: 24, filter: "blur(6px)"}, {opacity: 1, y: 0, filter: "blur(0px)", duration: 0.35, stagger: 0.1}, 0.6);')
+    js.append('tl.fromTo("#card .rule", {scaleX: 0}, {scaleX: 1, duration: 0.6, ease: "power2.out"}, 1.2);')
+    for k, (a, b) in enumerate(spans):
+        js.append(f'tl.fromTo("#i{k}", {{opacity: 0, x: 40}}, {{opacity: 1, x: 0, duration: 0.35, ease: "power3.out"}}, {a:.2f});')
+        js.append(f'tl.fromTo("#i{k} .n", {{scale: 0.3, rotation: -90}}, {{scale: 1, rotation: 0, duration: 0.4, ease: "back.out(2.5)"}}, {a + 0.05:.2f});')
+        js.append(f'tl.fromTo("#i{k}", {{backgroundColor: "rgba(242,193,78,0)"}}, {{backgroundColor: "rgba(242,193,78,.22)", duration: 0.3}}, {a:.2f});')
+        js.append(f'tl.fromTo("#i{k} .g", {{backgroundSize: "0% 100%"}}, {{backgroundSize: "100% 100%", duration: 0.5}}, {a + 0.45:.2f});')
+        js.append(f'tl.to("#i{k}", {{backgroundColor: "rgba(242,193,78,0)", duration: 0.3}}, {b - 0.1:.2f});')
+    js.append(f'tl.fromTo("#end", {{opacity: 0, y: 20, scale: 0.8}}, {{opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(2)"}}, {o0 + 0.1:.2f});')
+    js.append(f'tl.fromTo("#card", {{boxShadow: "0 30px 80px rgba(0,0,0,.35)"}}, {{boxShadow: "0 0 0 6px rgba(242,193,78,.55), 0 30px 80px rgba(0,0,0,.35)", duration: 0.4, yoyo: true, repeat: 1}}, {o0:.2f});')
+    tw = spec['title'].split(' ')
+    title = ' '.join(f'<span class="w">{e(w)}</span>' for w in tw)
+    sub = gold(spec.get('title_sub', ''))   # whole line (splitting would cut the gold tag)
+    fs = spec.get('item_size', 35)
+    doc = f'''<!doctype html>
+<html lang="ms">
+  <head>
+    <meta charset="UTF-8" /><meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      @font-face {{ font-family: "Mont"; src: url("assets/Montserrat.ttf"); font-weight: 100 900; }}
+      @font-face {{ font-family: "Play"; src: url("assets/PlayfairDisplay.ttf"); font-weight: 400 900; }}
+      * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+      html, body {{ width: 1080px; height: 1920px; overflow: hidden; background: #0b0805; }}
+      #root {{ position: relative; width: 1080px; height: 1920px; font-family: "Mont", sans-serif; overflow: hidden; }}
+      .bg {{ position: absolute; inset: 0; width: 1080px; height: 1920px; object-fit: cover; filter: blur({spec.get('bg_blur', 2)}px) brightness({spec.get('bg_dim', .9)}); }}
+      #card {{ position: absolute; left: 66px; width: 890px; top: 232px; height: 1268px; border-radius: 46px; padding: 46px 50px 36px; opacity: 0;
+              background: linear-gradient(165deg, rgba(255,255,255,.80), rgba(255,250,238,.70)); backdrop-filter: blur(26px) saturate(1.3);
+              border: 3px solid rgba(214,166,62,.95); box-shadow: 0 30px 80px rgba(0,0,0,.35); color: #1d1a16; }}
+      #card::before {{ content: ""; position: absolute; inset: 14px; border-radius: 34px; border: 1.5px solid rgba(214,166,62,.45); pointer-events: none; }}
+      .lbl {{ text-align: center; font-size: 24px; font-weight: 800; letter-spacing: .3em; color: #B8862B; }}
+      .ttl {{ text-align: center; font-family: "Play", serif; font-weight: 900; font-size: 62px; line-height: 1.05; margin-top: 6px; color: #16130f; }}
+      .sub {{ text-align: center; font-family: "Play", serif; font-weight: 700; font-size: 42px; margin-top: 0; opacity: 0; }}
+      .w {{ display: inline-block; }}
+      .rule {{ height: 4px; width: 220px; margin: 16px auto 14px; border-radius: 2px; background: linear-gradient(90deg, #E9C46A, #B8862B); transform-origin: center; }}
+      .g {{ color: #A8741A; font-weight: 800; background-image: linear-gradient(transparent 60%, rgba(242,193,78,.45) 60%); background-repeat: no-repeat; background-size: 0% 100%; }}
+      .sub .g {{ background: none; }}
+      .it {{ display: flex; align-items: flex-start; gap: 18px; padding: 7px 14px; border-radius: 18px; opacity: 0; margin-bottom: 2px; }}
+      .n {{ flex: none; width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 26px; color: #fff;
+            background: radial-gradient(circle at 35% 30%, #F6D88A, #D4A13A 65%, #A8741A); box-shadow: 0 4px 10px rgba(168,116,26,.35); margin-top: 2px; }}
+      .tx {{ font-size: {fs}px; font-weight: 600; line-height: 1.28; color: #26211b; }}
+      #end {{ position: absolute; left: 0; right: 0; top: 1468px; text-align: center; opacity: 0; }}   /* sits on the card's bottom edge */
+      #end span {{ display: inline-block; font-size: 38px; font-weight: 800; color: #2a1600; padding: 14px 36px; border-radius: 50px;
+                  background: linear-gradient(180deg, #FFE7A0, #F2C14E 60%, #D49B2A); box-shadow: 0 10px 26px rgba(0,0,0,.35); }}
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="{D:.2f}" data-width="1080" data-height="1920">
+      {bgs}
+      <audio id="sfx" class="clip" src="assets/sfx.wav" data-start="0" data-duration="{D:.2f}" data-track-index="9"></audio>
+      <div id="ui" class="clip" data-start="0" data-duration="{D:.2f}" data-track-index="10" style="position:absolute;inset:0">
+        <div id="card"><div class="lbl">{e(spec.get("label", ""))}</div><div class="ttl">{title}</div><div class="sub">{sub}</div><div class="rule"></div>{rows}</div>
+        <div id="end"><span>{e(spec.get("outro_sub", ""))}</span></div>
+      </div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {{}};
+      const tl = gsap.timeline({{ paused: true }});
+      {chr(10).join("      " + x for x in js)}
+      tl.set({{}}, {{}}, {D:.2f});
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
+'''
+    os.makedirs(os.path.join(out, 'assets'), exist_ok=True)
+    open(os.path.join(out, 'index.html'), 'w').write(doc)
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import sfx
+    ev = [(0.2, 'swoosh', -2), (0.6, 'shimmer', -4)] + [(a, 'pop', -1) for a, _ in spans] + [(a + 0.45, 'tick', -9) for a, _ in spans]
+    ev += [(o0, 'coin', -2), (o0 + 0.1, 'shimmer', -4)]
+    sfx.render_track(sorted(ev), D, os.path.join(out, 'assets', 'sfx.wav'), spec.get('sfx_gain_db', -10), spec.get('music_db', -12))
+    print('ok', out, 'tempoh', D)
+
 if __name__ == '__main__':
-    build(json.load(open(sys.argv[1])), sys.argv[2])
+    sp = json.load(open(sys.argv[1]))
+    (build_list if sp.get('mode') == 'list' else build)(sp, sys.argv[2])

@@ -1,0 +1,62 @@
+{
+ "label": "TIPS KEWANGAN",
+ "title": "10 Cara Jimat Duit",
+ "title_sub": "untuk *Anak Muda*",
+ "items": [
+  [
+   "Buat *bajet* setiap kali dapat gaji.",
+   "wallet"
+  ],
+  [
+   "Kurangkan *makan di luar*. Masak sendiri bila boleh.",
+   "food"
+  ],
+  [
+   "Cari rumah atau bilik sewa *ikut kemampuan*.",
+   "home"
+  ],
+  [
+   "Manfaatkan *bantuan atau insentif* yang layak.",
+   "gift"
+  ],
+  [
+   "Bayar hutang *tepat pada masanya*.",
+   "clock"
+  ],
+  [
+   "Elakkan beli barang semata-mata *ikut trend*.",
+   "bag"
+  ],
+  [
+   "Jangan biarkan gaya hidup *melebihi gaji*.",
+   "scale"
+  ],
+  [
+   "Cari *side income* untuk tambah pendapatan.",
+   "laptop"
+  ],
+  [
+   "*Asingkan duit simpanan* sebaik sahaja dapat gaji.",
+   "coins"
+  ],
+  [
+   "Elakkan tambah hutang untuk perkara yang *tak perlu*.",
+   "card"
+  ]
+ ],
+ "outro": "Mana satu awak *dah buat*?",
+ "outro_sub": "Simpan & kongsi dengan kawan",
+ "bg": [
+  "assets/kl.mp4"
+ ],
+ "intro": 2.4,
+ "per_item": [
+  2.0,
+  0.032
+ ],
+ "outro_dur": 4.0,
+ "bg_blur": 2,
+ "bg_dim": 0.95,
+ "shade": 0.5,
+ "mode": "list"
+}
