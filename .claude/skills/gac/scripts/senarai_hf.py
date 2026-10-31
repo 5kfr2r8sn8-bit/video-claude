@@ -11,6 +11,7 @@ spec = {
   "intro": 3.6, "per_item": [2.4, 0.035], "outro_dur": 3.4, "music_db": -12, "sfx_gain_db": -10
 }
 per_item = [base seconds, extra seconds per character]: longer tips stay longer.
+No voice = quiet track: after rendering run loudnorm=I=-15:TP=-1.5 on the audio (music-only videos measured -26.6 LUFS).
 Icons: wallet, food, home, gift, clock, bag, scale, laptop, coins, card."""
 import json, os, re, sys, html, subprocess
 
