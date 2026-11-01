@@ -12,7 +12,8 @@ spec = {
   "intro": 3.6, "per_item": [2.4, 0.035], "outro_dur": 3.4, "music_db": -12, "sfx_gain_db": -10
 }
 per_item = [base seconds, extra seconds per character]: longer tips stay longer.
-"mode": "list" = one light frosted frame holding the whole list (items appear and stay, current one highlighted).
+TikTok safe frame: tall phones crop ~100 px off each side and the caption covers y > ~1360, so frames are centred
+(x 130-950) and end above 1360. "mode": "list" = one light frosted frame holding the whole list (items appear and stay, current one highlighted).
 No voice = quiet track: after rendering run loudnorm=I=-15:TP=-1.5 on the audio (music-only videos measured -26.6 LUFS).
 Icons: wallet, food, home, gift, clock, bag, scale, laptop, coins, card."""
 import json, os, re, sys, html, subprocess
@@ -89,30 +90,30 @@ def build(spec, out):
       #shade {{ position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, rgba(40,28,10,.10), rgba(8,6,4,{spec.get('shade', .75)}) 75%); }}
       #ui {{ position: absolute; inset: 0; }}
       .g {{ color: #F2C14E; background-image: linear-gradient(transparent 62%, rgba(242,193,78,.28) 62%); background-repeat: no-repeat; background-size: 0% 100%; }}
-      #intro {{ position: absolute; left: 80px; right: 140px; top: 520px; text-align: center; }}
+      #intro {{ position: absolute; left: 110px; right: 110px; top: 520px; text-align: center; }}
       .lbl {{ font-size: 30px; font-weight: 800; letter-spacing: .32em; color: #F2C14E; }}
       #intro .big {{ font-family: "Play", serif; font-weight: 900; font-size: 260px; line-height: 1; margin-top: 10px;
                     background: linear-gradient(180deg, #FFEDB0, #F2C14E 55%, #B98018); -webkit-background-clip: text; background-clip: text; color: transparent; }}
       #intro .ttl {{ font-family: "Play", serif; font-weight: 700; font-size: 84px; line-height: 1.1; margin-top: 4px; }}
       #intro .w {{ display: inline-block; }}
       #intro .sub {{ font-size: 50px; font-weight: 700; margin-top: 18px; }}
-      #head {{ position: absolute; left: 90px; width: 860px; top: 300px; opacity: 0; }}
+      #head {{ position: absolute; left: 130px; width: 820px; top: 300px; opacity: 0; }}
       #head .row {{ display: flex; justify-content: space-between; align-items: baseline; }}
       #head .ttl {{ font-family: "Play", serif; font-weight: 700; font-size: 46px; }}
       #cnt {{ font-size: 34px; font-weight: 800; color: #F2C14E; }}
       #bar {{ height: 8px; border-radius: 4px; background: rgba(255,255,255,.18); margin-top: 18px; overflow: hidden; }}
       #bar i {{ display: block; height: 100%; width: 0; background: linear-gradient(90deg, #FFE7A0, #F2C14E, #D49B2A); border-radius: 4px; }}
-      #frame {{ position: absolute; left: 90px; width: 860px; top: 520px; height: 820px; border-radius: 48px; opacity: 0;
+      #frame {{ position: absolute; left: 130px; width: 820px; top: 500px; height: 800px; border-radius: 48px; opacity: 0;
                background: linear-gradient(160deg, rgba(40,30,16,.62), rgba(14,11,8,.72)); backdrop-filter: blur(24px) saturate(1.2);
                border: 2.5px solid rgba(232,190,100,.75); box-shadow: 0 30px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,236,180,.35); }}
       #frame::before {{ content: ""; position: absolute; inset: 16px; border-radius: 36px; border: 1px solid rgba(232,190,100,.28); }}
-      .tip {{ position: absolute; left: 90px; width: 860px; top: 520px; height: 820px; padding: 70px 70px; opacity: 0;
+      .tip {{ position: absolute; left: 130px; width: 820px; top: 500px; height: 800px; padding: 64px 64px; opacity: 0;
              display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 14px; }}
       .num {{ font-family: "Play", serif; font-weight: 900; font-size: 150px; line-height: 1;
              background: linear-gradient(180deg, #FFEDB0, #F2C14E 55%, #B98018); -webkit-background-clip: text; background-clip: text; color: transparent;
              filter: drop-shadow(0 6px 14px rgba(0,0,0,.45)); }}
       .txt {{ font-size: 66px; font-weight: 800; line-height: 1.22; text-shadow: 0 4px 14px rgba(0,0,0,.45); }}
-      #outro {{ position: absolute; left: 80px; right: 140px; top: 700px; text-align: center; opacity: 0; }}
+      #outro {{ position: absolute; left: 110px; right: 110px; top: 700px; text-align: center; opacity: 0; }}
       #outro .q {{ font-family: "Play", serif; font-weight: 700; font-size: 92px; line-height: 1.15; }}
       #outro .sub {{ display: inline-block; margin-top: 34px; font-size: 40px; font-weight: 800; color: #2a1600; padding: 16px 38px; border-radius: 50px;
                     background: linear-gradient(180deg, #FFE7A0, #F2C14E 60%, #D49B2A); box-shadow: 0 10px 26px rgba(0,0,0,.45); }}
@@ -174,12 +175,12 @@ def build_list(spec, out):
         js.append(f'tl.fromTo("#i{k}", {{backgroundColor: "rgba(242,193,78,0)"}}, {{backgroundColor: "rgba(242,193,78,.22)", duration: 0.3}}, {a:.2f});')
         js.append(f'tl.fromTo("#i{k} .g", {{backgroundSize: "0% 100%"}}, {{backgroundSize: "100% 100%", duration: 0.5}}, {a + 0.45:.2f});')
         js.append(f'tl.to("#i{k}", {{backgroundColor: "rgba(242,193,78,0)", duration: 0.3}}, {b - 0.1:.2f});')
-    js.append(f'tl.fromTo("#end", {{opacity: 0, y: 20, scale: 0.8}}, {{opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(2)"}}, {o0 + 0.1:.2f});')
+    if spec.get('end_pill'): js.append(f'tl.fromTo("#end", {{opacity: 0, y: 20, scale: 0.8}}, {{opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(2)"}}, {o0 + 0.1:.2f});')
     js.append(f'tl.fromTo("#card", {{boxShadow: "0 30px 80px rgba(0,0,0,.35)"}}, {{boxShadow: "0 0 0 6px rgba(242,193,78,.55), 0 30px 80px rgba(0,0,0,.35)", duration: 0.4, yoyo: true, repeat: 1}}, {o0:.2f});')
     tw = spec['title'].split(' ')
     title = ' '.join(f'<span class="w">{e(w)}</span>' for w in tw)
     sub = gold(spec.get('title_sub', ''))   # whole line (splitting would cut the gold tag)
-    fs = spec.get('item_size', 35)
+    fs = spec.get('item_size', 31)
     doc = f'''<!doctype html>
 <html lang="ms">
   <head>
@@ -192,21 +193,21 @@ def build_list(spec, out):
       html, body {{ width: 1080px; height: 1920px; overflow: hidden; background: #0b0805; }}
       #root {{ position: relative; width: 1080px; height: 1920px; font-family: "Mont", sans-serif; overflow: hidden; }}
       .bg {{ position: absolute; inset: 0; width: 1080px; height: 1920px; object-fit: cover; filter: blur({spec.get('bg_blur', 2)}px) brightness({spec.get('bg_dim', .9)}); }}
-      #card {{ position: absolute; left: 66px; width: 890px; top: 232px; height: 1268px; border-radius: 46px; padding: 46px 50px 36px; opacity: 0;
+      #card {{ position: absolute; left: 140px; width: 800px; top: 236px; height: 1124px; border-radius: 44px; padding: 40px 40px 30px; opacity: 0;
               background: linear-gradient(165deg, rgba(255,255,255,.80), rgba(255,250,238,.70)); backdrop-filter: blur(26px) saturate(1.3);
               border: 3px solid rgba(214,166,62,.95); box-shadow: 0 30px 80px rgba(0,0,0,.35); color: #1d1a16; }}
       #card::before {{ content: ""; position: absolute; inset: 14px; border-radius: 34px; border: 1.5px solid rgba(214,166,62,.45); pointer-events: none; }}
       .lbl {{ text-align: center; font-size: 24px; font-weight: 800; letter-spacing: .3em; color: #B8862B; }}
-      .ttl {{ text-align: center; font-family: "Play", serif; font-weight: 900; font-size: 62px; line-height: 1.05; margin-top: 6px; color: #16130f; }}
-      .sub {{ text-align: center; font-family: "Play", serif; font-weight: 700; font-size: 42px; margin-top: 0; opacity: 0; }}
+      .ttl {{ text-align: center; font-family: "Play", serif; font-weight: 900; font-size: 56px; line-height: 1.05; margin-top: 6px; color: #16130f; }}
+      .sub {{ text-align: center; font-family: "Play", serif; font-weight: 700; font-size: 38px; margin-top: 0; opacity: 0; }}
       .w {{ display: inline-block; }}
       .rule {{ height: 4px; width: 220px; margin: 16px auto 14px; border-radius: 2px; background: linear-gradient(90deg, #E9C46A, #B8862B); transform-origin: center; }}
       .g {{ color: #A8741A; font-weight: 800; background-image: linear-gradient(transparent 60%, rgba(242,193,78,.45) 60%); background-repeat: no-repeat; background-size: 0% 100%; }}
       .sub .g {{ background: none; }}
-      .it {{ display: flex; align-items: flex-start; gap: 18px; padding: 7px 14px; border-radius: 18px; opacity: 0; margin-bottom: 2px; }}
-      .n {{ flex: none; width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 26px; color: #fff;
+      .it {{ display: flex; align-items: flex-start; gap: 14px; padding: 6px 12px; border-radius: 18px; opacity: 0; margin-bottom: 2px; }}
+      .n {{ flex: none; width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 26px; color: #fff;
             background: radial-gradient(circle at 35% 30%, #F6D88A, #D4A13A 65%, #A8741A); box-shadow: 0 4px 10px rgba(168,116,26,.35); margin-top: 2px; }}
-      .tx {{ font-size: {fs}px; font-weight: 600; line-height: 1.28; color: #26211b; }}
+      .tx {{ font-size: {fs}px; font-weight: 600; line-height: 1.24; color: #26211b; }}
       #end {{ position: absolute; left: 0; right: 0; top: 1468px; text-align: center; opacity: 0; }}   /* sits on the card's bottom edge */
       #end span {{ display: inline-block; font-size: 38px; font-weight: 800; color: #2a1600; padding: 14px 36px; border-radius: 50px;
                   background: linear-gradient(180deg, #FFE7A0, #F2C14E 60%, #D49B2A); box-shadow: 0 10px 26px rgba(0,0,0,.35); }}
@@ -218,7 +219,7 @@ def build_list(spec, out):
       <audio id="sfx" class="clip" src="assets/sfx.wav" data-start="0" data-duration="{D:.2f}" data-track-index="9"></audio>
       <div id="ui" class="clip" data-start="0" data-duration="{D:.2f}" data-track-index="10" style="position:absolute;inset:0">
         <div id="card"><div class="lbl">{e(spec.get("label", ""))}</div><div class="ttl">{title}</div><div class="sub">{sub}</div><div class="rule"></div>{rows}</div>
-        <div id="end"><span>{e(spec.get("outro_sub", ""))}</span></div>
+        {f'<div id="end"><span>{e(spec["outro_sub"])}</span></div>' if spec.get("end_pill") else ''}
       </div>
     </div>
     <script>
