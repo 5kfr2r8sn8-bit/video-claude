@@ -76,4 +76,7 @@ Kad di jalur atas kepala (y 225 hingga atas rambut − 20). Sari kata di paras d
   `boxblur=26:4` atas jalur itu + jalur besar semasa peralihan. Lajukan supaya muat ayat (`setpts=PTS/1.36`).
   Papar dalam bingkai telefon: `broll` `"video"` + `"phone": {"w": 520, "top": 150, "ratio": 2.17}` (atas latar sinar,
   sari kata kekal di bawah, tiada label atas skrin app).
+- **Aurat dalam B-roll (pengguna, Rakaman7):** jangan guna bahagian klip yang menunjukkan rambut wanita
+  (contoh klip cincin PG Jewel: 8.5–12 s ada tangan di rambut, guna 0–8 s sahaja). Semak setiap klip B-roll bingkai
+  demi bingkai sebelum guna.
 - Contoh lengkap: Rakaman6 (`build/hf/r6g3/spec.json`, graf + kesan kamera), Rakaman5 (`build/hf/r5g3/spec.json`, semua jenis), Rakaman4 (`build/hf/r4g3/spec.json`).
