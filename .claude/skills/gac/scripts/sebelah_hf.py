@@ -59,7 +59,8 @@ def build(spec, out):
     brolls = ''
     for j, r in enumerate(spec.get('broll', [])):
         a, b = r['t']
-        brolls += f'<img class="br" id="br{j}" src="{e(r["img"])}"/>'
+        pos = f' style="object-position:{r["pos"]}"' if r.get('pos') else ''   # "pos": "80% 50%" keeps a person at the edge in view
+        brolls += f'<img class="br" id="br{j}" src="{e(r["img"])}"{pos}/>'
         js.append(f'tl.fromTo("#br{j}", {{opacity: 0, scale: 1.0}}, {{opacity: 1, scale: 1.04, duration: 0.35, ease: "power2.out"}}, {a:.2f});')
         js.append(f'tl.to("#br{j}", {{scale: 1.14, duration: {b - a - 0.3:.2f}, ease: "none"}}, {a + 0.35:.2f});')
         js.append(f'tl.to("#br{j}", {{opacity: 0, duration: 0.3}}, {b - 0.3:.2f});')

@@ -312,10 +312,25 @@
   },
   {
    "t": [
-    48.5,
-    52.3
+    48.4,
+    50.5
    ],
    "img": "assets/emas_10g.jpg"
+  },
+  {
+   "t": [
+    50.5,
+    52.6
+   ],
+   "img": "assets/pg_gelang.jpg"
+  },
+  {
+   "t": [
+    85.1,
+    88.9
+   ],
+   "img": "assets/pg_jewel_papan.jpg",
+   "pos": "82% 50%"
   },
   {
    "t": [
@@ -327,9 +342,9 @@
   {
    "t": [
     130.6,
-    133.6
+    134.0
    ],
-   "img": "assets/emas_tangan.jpg"
+   "img": "assets/pg_showroom1.jpg"
   }
  ]
 }
