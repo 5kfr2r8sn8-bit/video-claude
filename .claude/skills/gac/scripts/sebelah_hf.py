@@ -10,7 +10,9 @@ spec = {
   "video": "assets/cut.mp4", "duration": 139.9, "split_at": 5.9,   # full screen until split_at
   "hook": {"label": "SOALAN PALING KERAP", "title": "Kenapa emas di bank nampak *lebih murah*?"},
   "total": 8, "captions": {"words": "words.json", "keys": [...]},
-  "broll": [{"t": [a, b], "img": "assets/emas.jpg"}],               # product photos inside the left box
+  "broll": [{"t": [a, b], "img": "assets/emas.jpg"},               # product photos / clips inside the left box
+            {"t": [a, b], "video": "assets/klip.mp4"},               # pre-trimmed 1080x1920 clip, muted
+            {"t": [a, b], "img": "assets/x.jpg", "fit": "contain"}],  # whole photo visible (user: "bagi nampak semua")
   "sections": [{"t": [a, b], "tag": "SEBAB 1 / 8", "n": 1, "title": "...", "items": [["v"|"x"|"", "text"]], "at": [...], "note": "..."},
                {"t": [a, b], "cta": true, "logo": "assets/pg_logo.png", "title": "...", "pills": [...], "at": [...]}]
 }"""
@@ -58,11 +60,16 @@ def build(spec, out):
     # B-roll photos shown INSIDE the left box (voice keeps going), slow push-in; nothing drawn over the product
     brolls = ''
     for j, r in enumerate(spec.get('broll', [])):
-        a, b = r['t']
-        pos = f' style="object-position:{r["pos"]}"' if r.get('pos') else ''   # "pos": "80% 50%" keeps a person at the edge in view
-        brolls += f'<img class="br" id="br{j}" src="{e(r["img"])}"{pos}/>'
-        js.append(f'tl.fromTo("#br{j}", {{opacity: 0, scale: 1.0}}, {{opacity: 1, scale: 1.04, duration: 0.35, ease: "power2.out"}}, {a:.2f});')
-        js.append(f'tl.to("#br{j}", {{scale: 1.14, duration: {b - a - 0.3:.2f}, ease: "none"}}, {a + 0.35:.2f});')
+        a, b = r['t']; pos = f' style="object-position:{r["pos"]}"' if r.get('pos') else ''   # "pos": "80% 50%" keeps a person at the edge in view
+        if r.get('video'):     # a pre-trimmed 1080x1920 clip, muted
+            inner = f'<video id="bv{j}" class="clip" src="{e(r["video"])}" data-start="{a:.2f}" data-duration="{b - a:.2f}" data-track-index="{10 + j}" muted playsinline></video>'
+        elif r.get('fit') == 'contain':   # whole photo visible, blurred copy fills the rest of the box
+            inner = f'<img class="bgfill" src="{e(r["img"])}"/><img class="whole" src="{e(r["img"])}"/>'
+        else:
+            inner = f'<img src="{e(r["img"])}"{pos}/>'
+        brolls += f'<div class="br" id="br{j}">{inner}</div>'
+        js.append(f'tl.fromTo("#br{j}", {{opacity: 0, scale: 1.0}}, {{opacity: 1, scale: 1.03, duration: 0.35, ease: "power2.out"}}, {a:.2f});')
+        js.append(f'tl.to("#br{j}", {{scale: {1.06 if r.get("video") or r.get("fit") else 1.14}, duration: {b - a - 0.3:.2f}, ease: "none"}}, {a + 0.35:.2f});')
         js.append(f'tl.to("#br{j}", {{opacity: 0, duration: 0.3}}, {b - 0.3:.2f});')
     H = spec.get('hook', {})
     hook = f'<div id="hook"><div class="lbl">{e(H.get("label", ""))}</div><div class="ttl">{gold(H.get("title", ""))}</div></div>' if H else ''
@@ -96,7 +103,10 @@ def build(spec, out):
               background: repeating-conic-gradient(from 0deg at 50% 40%, rgba(255,200,90,.05) 0deg 5deg, rgba(0,0,0,0) 5deg 13deg); }}
       #box {{ position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 0 0; overflow: hidden; border-radius: 0; }}
       #vid {{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform-origin: 50% 30%; }}
-      .br {{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; }}
+      .br {{ position: absolute; inset: 0; opacity: 0; overflow: hidden; }}
+      .br > img, .br > video {{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }}
+      .br > img.bgfill {{ filter: blur(40px) brightness(.55); transform: scale(1.2); }}
+      .br > img.whole {{ object-fit: contain; }}
       #frame {{ position: absolute; left: {BOX["x"] - 6}px; top: {BOX["y"] - 6}px; width: {bw + 12}px; height: {bh + 12}px; border-radius: 44px; opacity: 0;
                border: 4px solid #E3B758; box-shadow: 0 0 0 8px rgba(227,183,88,.18), 0 24px 60px rgba(0,0,0,.6); pointer-events: none; }}
       #panel {{ position: absolute; left: {PANEL["x"]}px; top: {PANEL["y"]}px; width: {PANEL["w"]}px; height: {PANEL["h"]}px; border-radius: 34px; opacity: 0;

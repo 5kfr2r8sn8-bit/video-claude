@@ -305,10 +305,10 @@
  "broll": [
   {
    "t": [
-    23.2,
+    22.9,
     26.7
    ],
-   "img": "assets/emas_tangan.jpg"
+   "video": "assets/c_pegang.mp4"
   },
   {
    "t": [
@@ -322,22 +322,43 @@
     50.5,
     52.6
    ],
-   "img": "assets/pg_gelang.jpg"
+   "video": "assets/c_cincin.mp4"
+  },
+  {
+   "t": [
+    58.6,
+    62.0
+   ],
+   "video": "assets/c_kaunter.mp4"
   },
   {
    "t": [
     85.1,
-    88.9
+    88.6
    ],
    "img": "assets/pg_jewel_papan.jpg",
-   "pos": "82% 50%"
+   "fit": "contain"
   },
   {
    "t": [
-    90.9,
-    94.5
+    88.6,
+    91.0
    ],
    "img": "assets/emas_bungamas.jpg"
+  },
+  {
+   "t": [
+    91.0,
+    94.6
+   ],
+   "video": "assets/c_atm.mp4"
+  },
+  {
+   "t": [
+    105.0,
+    108.3
+   ],
+   "video": "assets/c_simpan.mp4"
   },
   {
    "t": [
