@@ -1,0 +1,305 @@
+{
+ "video": "assets/cut.mp4",
+ "duration": 139.9,
+ "focus_y": 26,
+ "total": 8,
+ "captions": {
+  "words": "words.json",
+  "keys": [
+   "Public Gold",
+   "emas fizikal",
+   "fizikal",
+   "bank",
+   "murah",
+   "spread",
+   "praktikal",
+   "harga akhir",
+   "jual",
+   "sign up",
+   "borang",
+   "8 sebab"
+  ]
+ },
+ "sections": [
+  {
+   "t": [
+    0.0,
+    12.72
+   ],
+   "tag": "8 SEBAB",
+   "title": "Dikongsi mentor emas saya",
+   "items": [
+    [
+     "",
+     "Tuan Haji Mohd Zulkifli Shafie"
+    ]
+   ],
+   "at": [
+    10.9
+   ],
+   "note": "Perkongsian pengalaman & pandangan peribadi"
+  },
+  {
+   "t": [
+    12.76,
+    28.92
+   ],
+   "tag": "SEBAB 1 / 8",
+   "n": 1,
+   "title": "Tujuan awak *apa*?",
+   "items": [
+    [
+     "x",
+     "Sekadar tengok nombor naik turun → emas bank mungkin sesuai"
+    ],
+    [
+     "v",
+     "Nak pegang & keluarkan emas fizikal → Public Gold lebih *praktikal*"
+    ]
+   ],
+   "at": [
+    15.2,
+    22.1
+   ]
+  },
+  {
+   "t": [
+    28.96,
+    44.1
+   ],
+   "tag": "SEBAB 2 / 8",
+   "n": 2,
+   "title": "Bukan soal siapa paling murah *di skrin*",
+   "items": [
+    [
+     "v",
+     "Harga akhir"
+    ],
+    [
+     "v",
+     "Proses keluarkan emas fizikal"
+    ],
+    [
+     "v",
+     "Mudah atau tidak dijual semula"
+    ]
+   ],
+   "at": [
+    38.9,
+    39.8,
+    42.5
+   ],
+   "note": "Pengalaman mentor dalam emas sejak 2010"
+  },
+  {
+   "t": [
+    44.16,
+    52.5
+   ],
+   "tag": "SEBAB 3 / 8",
+   "n": 3,
+   "title": "Fokus Public Gold: *emas fizikal*",
+   "items": [
+    [
+     "v",
+     "Beli"
+    ],
+    [
+     "v",
+     "Simpan gram"
+    ],
+    [
+     "v",
+     "Keluarkan gold bar / barang kemas"
+    ]
+   ],
+   "at": [
+    48.0,
+    48.6,
+    50.4
+   ]
+  },
+  {
+   "t": [
+    52.54,
+    62.1
+   ],
+   "tag": "SEBAB 4 / 8",
+   "n": 4,
+   "title": "Emas bank: kebanyakan *nombor dalam akaun*",
+   "items": [
+    [
+     "",
+     "Ada bank benarkan pengeluaran fizikal"
+    ],
+    [
+     "x",
+     "Tapi prosesnya *tidak semudah* Public Gold"
+    ]
+   ],
+   "at": [
+    56.7,
+    60.4
+   ]
+  },
+  {
+   "t": [
+    62.14,
+    70.68
+   ],
+   "tag": "SEBAB 5 / 8",
+   "n": 5,
+   "title": "Keluarkan melalui bank: harga akhir *boleh lebih mahal*",
+   "items": [
+    [
+     "x",
+     "Caj"
+    ],
+    [
+     "x",
+     "Syarat"
+    ],
+    [
+     "x",
+     "Prosedur & proses tertentu"
+    ]
+   ],
+   "at": [
+    68.0,
+    68.7,
+    69.2
+   ]
+  },
+  {
+   "t": [
+    70.72,
+    84.26
+   ],
+   "tag": "SEBAB 6 / 8",
+   "n": 6,
+   "title": "Nak jual balik? *Tak semudah itu*",
+   "items": [
+    [
+     "x",
+     "Tak semua bank boleh beli balik"
+    ],
+    [
+     "x",
+     "Ada syarat yang ketat"
+    ],
+    [
+     "x",
+     "Mungkin perlu jual di tempat lain, *spread lebih tinggi*"
+    ]
+   ],
+   "at": [
+    74.6,
+    77.2,
+    80.8
+   ]
+  },
+  {
+   "t": [
+    84.3,
+    99.84
+   ],
+   "tag": "SEBAB 7 / 8",
+   "n": 7,
+   "title": "Bisnes utama Public Gold: *emas*",
+   "items": [
+    [
+     "v",
+     "Beli · Simpan · Jual · Keluarkan emas fizikal"
+    ],
+    [
+     "",
+     "Bank: lebih fokus produk kewangan & pinjaman"
+    ]
+   ],
+   "at": [
+    91.0,
+    97.2
+   ]
+  },
+  {
+   "t": [
+    99.88,
+    114.76
+   ],
+   "tag": "SEBAB 8 / 8",
+   "n": 8,
+   "title": "Simpan emas fizikal *jangka panjang*?",
+   "items": [
+    [
+     "v",
+     "Public Gold memang *sangat sesuai*"
+    ],
+    [
+     "x",
+     "Nak tengok naik turun macam saham → bukan platform terbaik"
+    ]
+   ],
+   "at": [
+    106.3,
+    109.5
+   ]
+  },
+  {
+   "t": [
+    114.8,
+    127.82
+   ],
+   "tag": "SEBELUM PILIH",
+   "title": "Jangan tengok *harga murah* semata-mata",
+   "items": [
+    [
+     "v",
+     "Mudah keluarkan emas fizikal?"
+    ],
+    [
+     "v",
+     "Mudah jual semula?"
+    ],
+    [
+     "v",
+     "Berapa spread sebenar?"
+    ],
+    [
+     "v",
+     "Siapa beli balik nanti?"
+    ]
+   ],
+   "at": [
+    120.8,
+    123.0,
+    124.6,
+    125.8
+   ]
+  },
+  {
+   "t": [
+    127.86,
+    139.9
+   ],
+   "cta": true,
+   "logo": "assets/pg_logo.png",
+   "logo_at": 128.0,
+   "title": "Mula simpan emas fizikal di *Public Gold*",
+   "pills": [
+    "📌 Rujuk video pin",
+    "Isi borang sign up ↓"
+   ],
+   "at": [
+    133.4,
+    135.2
+   ]
+  }
+ ],
+ "music_db": -14,
+ "sfx_gain_db": -11,
+ "split_at": 5.9,
+ "hook": {
+  "label": "SOALAN PALING KERAP",
+  "title": "Kenapa emas di bank nampak *lebih murah* daripada Public Gold?"
+ }
+}
