@@ -301,5 +301,35 @@
  "hook": {
   "label": "SOALAN PALING KERAP",
   "title": "Kenapa emas di bank nampak *lebih murah* daripada Public Gold?"
- }
+ },
+ "broll": [
+  {
+   "t": [
+    23.2,
+    26.7
+   ],
+   "img": "assets/emas_tangan.jpg"
+  },
+  {
+   "t": [
+    48.5,
+    52.3
+   ],
+   "img": "assets/emas_10g.jpg"
+  },
+  {
+   "t": [
+    90.9,
+    94.5
+   ],
+   "img": "assets/emas_bungamas.jpg"
+  },
+  {
+   "t": [
+    130.6,
+    133.6
+   ],
+   "img": "assets/emas_tangan.jpg"
+  }
+ ]
 }

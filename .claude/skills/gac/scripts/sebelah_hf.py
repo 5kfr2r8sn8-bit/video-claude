@@ -10,6 +10,7 @@ spec = {
   "video": "assets/cut.mp4", "duration": 139.9, "split_at": 5.9,   # full screen until split_at
   "hook": {"label": "SOALAN PALING KERAP", "title": "Kenapa emas di bank nampak *lebih murah*?"},
   "total": 8, "captions": {"words": "words.json", "keys": [...]},
+  "broll": [{"t": [a, b], "img": "assets/emas.jpg"}],               # product photos inside the left box
   "sections": [{"t": [a, b], "tag": "SEBAB 1 / 8", "n": 1, "title": "...", "items": [["v"|"x"|"", "text"]], "at": [...], "note": "..."},
                {"t": [a, b], "cta": true, "logo": "assets/pg_logo.png", "title": "...", "pills": [...], "at": [...]}]
 }"""
@@ -54,6 +55,14 @@ def build(spec, out):
     for a, b in zip(starts, starts[1:]):
         js.append(f'tl.fromTo("#vid", {{scale: 1.0}}, {{scale: 1.12, duration: {b - a:.2f}, ease: "none", immediateRender: false}}, {a:.2f});')
     js.append(f'tl.fromTo("#vid", {{scale: 1.0}}, {{scale: 1.06, duration: {sp:.2f}, ease: "none"}}, 0);')
+    # B-roll photos shown INSIDE the left box (voice keeps going), slow push-in; nothing drawn over the product
+    brolls = ''
+    for j, r in enumerate(spec.get('broll', [])):
+        a, b = r['t']
+        brolls += f'<img class="br" id="br{j}" src="{e(r["img"])}"/>'
+        js.append(f'tl.fromTo("#br{j}", {{opacity: 0, scale: 1.0}}, {{opacity: 1, scale: 1.04, duration: 0.35, ease: "power2.out"}}, {a:.2f});')
+        js.append(f'tl.to("#br{j}", {{scale: 1.14, duration: {b - a - 0.3:.2f}, ease: "none"}}, {a + 0.35:.2f});')
+        js.append(f'tl.to("#br{j}", {{opacity: 0, duration: 0.3}}, {b - 0.3:.2f});')
     H = spec.get('hook', {})
     hook = f'<div id="hook"><div class="lbl">{e(H.get("label", ""))}</div><div class="ttl">{gold(H.get("title", ""))}</div></div>' if H else ''
     if H:
@@ -86,6 +95,7 @@ def build(spec, out):
               background: repeating-conic-gradient(from 0deg at 50% 40%, rgba(255,200,90,.05) 0deg 5deg, rgba(0,0,0,0) 5deg 13deg); }}
       #box {{ position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 0 0; overflow: hidden; border-radius: 0; }}
       #vid {{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform-origin: 50% 30%; }}
+      .br {{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; }}
       #frame {{ position: absolute; left: {BOX["x"] - 6}px; top: {BOX["y"] - 6}px; width: {bw + 12}px; height: {bh + 12}px; border-radius: 44px; opacity: 0;
                border: 4px solid #E3B758; box-shadow: 0 0 0 8px rgba(227,183,88,.18), 0 24px 60px rgba(0,0,0,.6); pointer-events: none; }}
       #panel {{ position: absolute; left: {PANEL["x"]}px; top: {PANEL["y"]}px; width: {PANEL["w"]}px; height: {PANEL["h"]}px; border-radius: 34px; opacity: 0;
@@ -121,7 +131,7 @@ def build(spec, out):
   <body>
     <div id="root" data-composition-id="main" data-start="0" data-duration="{D:.2f}" data-width="1080" data-height="1920">
       <div id="bgwrap"><video id="bgv" class="clip" src="{e(spec["video"])}" data-start="0" data-duration="{D:.2f}" data-track-index="0" muted playsinline></video><div id="tint"></div><div id="rays"></div></div>
-      <div id="box"><video id="vid" class="clip" src="{e(spec["video"])}" data-start="0" data-duration="{D:.2f}" data-track-index="1" data-has-audio="true"></video></div>
+      <div id="box"><video id="vid" class="clip" src="{e(spec["video"])}" data-start="0" data-duration="{D:.2f}" data-track-index="1" data-has-audio="true"></video>{brolls}</div>
       <div id="frame"></div>
       <audio id="sfx" class="clip" src="assets/sfx.wav" data-start="0" data-duration="{D:.2f}" data-track-index="2"></audio>
       <div id="ui" class="clip" data-start="0" data-duration="{D:.2f}" data-track-index="3" style="position:absolute;inset:0">
@@ -153,6 +163,7 @@ def build(spec, out):
         if s.get('n'): ev.append((a + 0.1, 'hit', -3))
         ev += [(t, 'pop', -2) for t in (s.get('at') or [])]
         if s.get('cta'): ev += [(a, 'swell', -3), (a + 0.2, 'coin', -2)]
+    for r in spec.get('broll', []): ev += [(r['t'][0], 'whoosh', -3), (r['t'][0] + 0.3, 'shimmer', -5)]
     sfx.render_track(sorted(ev), D, os.path.join(out, 'assets', 'sfx.wav'), spec.get('sfx_gain_db', -11), spec.get('music_db', -14))
     print('ok', out, D)
 
