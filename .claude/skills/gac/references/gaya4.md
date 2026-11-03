@@ -1,4 +1,6 @@
-# Gaya 4: "Skrin kecil + frame info" (sebelah-menyebelah, ada pergerakan)
+# Gaya 4 = "Gaya Kelas Emas" (skrin kecil + frame info, sebelah-menyebelah, ada pergerakan)
+
+Nama dipilih pengguna: **Gaya Kelas Emas**. Istilah umum: split-screen explainer / picture-in-picture.
 
 Gaya kegemaran pengguna (Rakaman7, 2026-11-03): "saya suka sangat, tak perlu fokus muka kita penuh satu skrin".
 Skrip: `scripts/sebelah_hf.py` (HyperFrames). Contoh lengkap: `references/sebelah_contoh.json` (`build/hf/r7lr/spec.json`).
