@@ -10,6 +10,7 @@ spec = {
   "video": "assets/cut.mp4", "duration": 139.9, "split_at": 5.9,   # full screen until split_at
   "hook": {"label": "SOALAN PALING KERAP", "title": "Kenapa emas di bank nampak *lebih murah*?"},
   "total": 8, "captions": {"words": "words.json", "keys": [...]},
+  "bg": "white",                                                 # optional: plain background (any CSS colour) instead of gold rays
   "broll": [{"t": [a, b], "img": "assets/emas.jpg"},               # product photos / clips inside the left box
             {"t": [a, b], "video": "assets/klip.mp4"},               # pre-trimmed 1080x1920 clip, muted
             {"t": [a, b], "img": "assets/x.jpg", "fit": "contain"}],  # whole photo visible (user: "bagi nampak semua")
@@ -85,6 +86,16 @@ def build(spec, out):
             caps += f'<div class="cap" id="k{j}"><span>{mark_key(t, C.get("keys", []))}</span></div>'
             cj.append(f'tl.fromTo("#k{j}", {{opacity: 0, y: 8}}, {{opacity: 1, y: 0, duration: 0.1}}, {a:.2f}); tl.to("#k{j}", {{opacity: 0, duration: 0.06}}, {min(b, D) - 0.06:.2f});')
     bw, bh = int(1080 * BOX['s']), int(1920 * BOX['s'])
+    plain = spec.get('bg')   # "white" (user: latar putih, tak bercorak) or any CSS colour: plain background, no rays / blurred video
+    if plain:
+        plain = {'white': '#FFFFFF'}.get(plain, plain)
+        bgwrap = f'<div id="bgwrap" style="background:{plain}"></div>'
+        theme = ('#frame { box-shadow: 0 0 0 8px rgba(227,183,88,.16), 0 18px 44px rgba(60,40,10,.22); }'
+                 ' #panel { box-shadow: 0 18px 44px rgba(60,40,10,.25), inset 0 1px 0 rgba(255,230,170,.2); }'
+                 ' .cap { text-shadow: none; } .cap span { background: rgba(20,15,9,.88); }')
+    else:
+        bgwrap = f'<div id="bgwrap"><video id="bgv" class="clip" src="{e(spec["video"])}" data-start="0" data-duration="{D:.2f}" data-track-index="0" muted playsinline></video><div id="tint"></div><div id="rays"></div></div>'
+        theme = ''
     doc = f'''<!doctype html>
 <html lang="ms">
   <head>
@@ -137,11 +148,12 @@ def build(spec, out):
       .cap {{ position: absolute; left: 136px; width: 808px; top: 1166px; height: 120px; display: flex; align-items: center; justify-content: center; text-align: center;
              font-size: 46px; font-weight: 800; line-height: 1.15; opacity: 0; text-shadow: 0 3px 10px rgba(0,0,0,.5); }}
       .cap span {{ background: rgba(14,11,8,.74); padding: 6px 22px 9px; border-radius: 16px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }}
+      {theme}
     </style>
   </head>
   <body>
     <div id="root" data-composition-id="main" data-start="0" data-duration="{D:.2f}" data-width="1080" data-height="1920">
-      <div id="bgwrap"><video id="bgv" class="clip" src="{e(spec["video"])}" data-start="0" data-duration="{D:.2f}" data-track-index="0" muted playsinline></video><div id="tint"></div><div id="rays"></div></div>
+      {bgwrap}
       <div id="box"><video id="vid" class="clip" src="{e(spec["video"])}" data-start="0" data-duration="{D:.2f}" data-track-index="1" data-has-audio="true"></video>{brolls}</div>
       <div id="frame"></div>
       <audio id="sfx" class="clip" src="assets/sfx.wav" data-start="0" data-duration="{D:.2f}" data-track-index="2"></audio>
@@ -155,7 +167,7 @@ def build(spec, out):
     <script>
       window.__timelines = window.__timelines || {{}};
       const tl = gsap.timeline({{ paused: true }});
-      tl.fromTo("#rays", {{rotation: 0}}, {{rotation: 25, duration: {D:.2f}, ease: "none"}}, 0);
+      {"" if plain else f'tl.fromTo("#rays", {{rotation: 0}}, {{rotation: 25, duration: {D:.2f}, ease: "none"}}, 0);'}
       {chr(10).join("      " + x for x in js)}
       {chr(10).join("      " + x for x in cj)}
       tl.set({{}}, {{}}, {D:.2f});

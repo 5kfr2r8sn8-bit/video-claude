@@ -23,3 +23,7 @@ Skrip: `scripts/sebelah_hf.py` (HyperFrames). Contoh lengkap: `references/sebela
 - Video panjang: potong segmen satu-satu (`build/rakaman7/cut_seg.py`) — filter_complex sekali gus kehabisan memori.
 - Pembetulan kecil pada satu bahagian: render bahagian itu sahaja (duration pendek, aset dikongsi) dan sambung dengan
   video penuh (ambil audio dari video penuh). Jangan jana `sfx.wav` dalam folder yang berkongsi aset (ia ditimpa).
+- **Latar putih kosong** (pengguna, Rakaman8: "cuba warna putih, tak nak bercorak"): `"bg": "white"` dalam spec
+  (atau mana-mana warna CSS). Panel tulisan & kotak sari kata kekal gelap supaya kontras. Contoh: `build/hf/r8/spec.json`.
+- Bahan pengguna terbaik (Rakaman8): klip selfie angkat 1 kg sebelah tangan (hook skrin penuh, perlahankan `setpts=1.36*PTS`
+  supaya jongkong kekal dalam bingkai) + klip angkat jongkong dari dulang merah; gambar rumah untuk ayat "rumah banglo".
