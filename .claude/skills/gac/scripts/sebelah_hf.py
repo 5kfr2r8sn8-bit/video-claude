@@ -124,10 +124,18 @@ def build(spec, out):
     C = spec.get('captions', {}); caps, cj = '', []
     if C.get('words'):
         for j, (a, b, t) in enumerate(phrases(json.load(open(os.path.join(out, C['words']))))):
-            if a >= D or b <= sp: continue          # full-screen opening: the hook card says it
-            a = max(a, sp + 0.5)
+            early = C.get('early')   # [{"until": s, "top": y, "left": x, "width": w}]: captions during the full-screen opening, placed off the face
+            st = ''
+            if a < sp and early:
+                w = next((x for x in early if a < x['until']), None)
+                if not w: continue
+                st = f' style="top:{w["top"]}px;left:{w.get("left", 136)}px;width:{w.get("width", 808)}px"'
+                b = min(b, sp + 0.1)   # the box starts shrinking: this caption ends with the full-screen part
+            else:
+                if a >= D or b <= sp: continue          # full-screen opening: the hook card says it
+                a = max(a, sp + 0.5)
             if min(b, D) - 0.1 <= a: continue      # phrase already over by the time captions start
-            caps += f'<div class="cap" id="k{j}"><span>{mark_key(t, C.get("keys", []))}</span></div>'
+            caps += f'<div class="cap" id="k{j}"{st}><span>{mark_key(t, C.get("keys", []))}</span></div>'
             cj.append(f'tl.fromTo("#k{j}", {{opacity: 0, y: 8}}, {{opacity: 1, y: 0, duration: 0.1}}, {a:.2f}); tl.to("#k{j}", {{opacity: 0, duration: 0.06}}, {min(b, D) - 0.06:.2f});')
     bw, bh = int(1080 * BOX['s']), int(1920 * BOX['s'])
     plain = spec.get('bg')   # "white" (user: latar putih, tak bercorak) or any CSS colour: plain background, no rays / blurred video
