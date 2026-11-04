@@ -24,6 +24,48 @@ from split_hf import e, gold, MARK, phrases, mark_key
 BOX = dict(x=136, y=400, s=0.385)          # left box: the full 1080x1920 frame scaled to 416x739
 PANEL = dict(x=572, y=400, w=372, h=739)   # right text frame, same height as the box
 
+SVG = {   # simple gold line icons for illustrations (drawn, no emoji)
+    'shield': '<svg viewBox="0 0 200 230" width="420"><defs><linearGradient id="gg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE7A0"/><stop offset=".6" stop-color="#F2C14E"/><stop offset="1" stop-color="#C98E22"/></linearGradient></defs>'
+              '<path d="M100 8 L188 40 V112 C188 168 150 205 100 222 C50 205 12 168 12 112 V40 Z" fill="rgba(242,193,78,.12)" stroke="url(#gg)" stroke-width="10"/>'
+              '<g transform="translate(46 92)"><rect x="0" y="40" width="50" height="34" rx="5" fill="url(#gg)"/><rect x="58" y="40" width="50" height="34" rx="5" fill="url(#gg)"/><rect x="29" y="0" width="50" height="34" rx="5" fill="url(#gg)"/></g></svg>',
+    'house':  '<svg viewBox="0 0 220 200" width="440"><defs><linearGradient id="gh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE7A0"/><stop offset="1" stop-color="#D49B2A"/></linearGradient></defs>'
+              '<path d="M20 96 L110 20 L200 96" fill="none" stroke="url(#gh)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>'
+              '<path d="M42 86 V184 H178 V86" fill="rgba(242,193,78,.12)" stroke="url(#gh)" stroke-width="10" stroke-linejoin="round"/>'
+              '<rect x="92" y="122" width="36" height="62" rx="4" fill="url(#gh)"/><rect x="56" y="110" width="26" height="24" rx="3" fill="url(#gh)"/><rect x="138" y="110" width="26" height="24" rx="3" fill="url(#gh)"/></svg>',
+}
+
+def illus(I, j, a, b):
+    """Animated illustration drawn inside the left box (1080x1920 space). kinds: bars / count / icon."""
+    k, h, L = I['kind'], '', []
+    q = f'#br{j}'
+    top = f'<div class="ilt">{gold(I["title"])}</div>' if I.get('title') else ''
+    note = f'<div class="iln">{e(I["note"])}</div>' if I.get('note') else ''
+    if k == 'bars':
+        mx = max(v for _, v, _ in I['bars'])
+        bars = ''.join(f'<div class="ib"><div class="ibv">{e(lab)}</div><div class="ibb" style="height:{int(820 * v / mx)}px"></div><div class="ibl">{e(x)}</div></div>'
+                       for x, v, lab in I['bars'])
+        h = f'{top}<div class="ibars">{bars}</div>{note}'
+        for n in range(len(I['bars'])):
+            t0 = a + 0.4 + n * 0.9
+            L.append(f'tl.fromTo("{q} .ib:nth-child({n + 1}) .ibb", {{scaleY: 0}}, {{scaleY: 1, duration: 0.8, ease: "power3.out"}}, {t0:.2f});')
+            L.append(f'tl.fromTo("{q} .ib:nth-child({n + 1}) .ibv", {{opacity: 0, y: 30}}, {{opacity: 1, y: 0, duration: 0.35}}, {t0 + 0.6:.2f});')
+            L.append(f'tl.fromTo("{q} .ib:nth-child({n + 1}) .ibl", {{opacity: 0}}, {{opacity: 1, duration: 0.3}}, {t0:.2f});')
+    elif k == 'count':
+        h = f'{top}<div class="icn"><span class="icp">{e(I.get("prefix", ""))}</span><span id="ic{j}">0</span></div><div class="ics">{gold(I.get("sub", ""))}</div>{note}'
+        L.append(f'const ic{j} = {{v: {I.get("from", 0)}}}; tl.fromTo(ic{j}, {{v: {I.get("from", 0)}}}, {{v: {I["to"]}, duration: {min(1.6, b - a - 0.6):.2f}, ease: "power2.out", immediateRender: false, onUpdate: () => {{ document.getElementById("ic{j}").textContent = Math.round(ic{j}.v).toLocaleString("en-US"); }}}}, {a + 0.3:.2f});')
+        L.append(f'tl.fromTo("{q} .icn", {{scale: 0.7}}, {{scale: 1, duration: 0.5, ease: "back.out(2.5)"}}, {a + 0.3:.2f});')
+        L.append(f'tl.fromTo("{q} .ics", {{opacity: 0, y: 30}}, {{opacity: 1, y: 0, duration: 0.4}}, {a + 1.2:.2f});')
+    else:   # icon + optional tags (strike = old value crossed out, up = new value with arrow)
+        tags = ''.join(f'<div class="itg{" st" if m == "x" else ""}">{gold(t)}</div>' for m, t in I.get('tags', []))
+        h = f'<div class="iic">{SVG[I["icon"]]}</div>{top}<div class="itgs">{tags}</div>{note}'
+        L.append(f'tl.fromTo("{q} .iic", {{scale: 0.5, opacity: 0}}, {{scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2)"}}, {a + 0.2:.2f});')
+        L.append(f'tl.fromTo("{q} .ilt", {{opacity: 0, y: 30}}, {{opacity: 1, y: 0, duration: 0.4}}, {a + 0.6:.2f});')
+        for n in range(len(I.get('tags', []))):
+            L.append(f'tl.fromTo("{q} .itg:nth-child({n + 1})", {{opacity: 0, x: 60}}, {{opacity: 1, x: 0, duration: 0.35, ease: "back.out(2)"}}, {a + 1.0 + n * 0.8:.2f});')
+    if note:
+        L.append(f'tl.fromTo("{q} .iln", {{opacity: 0}}, {{opacity: .85, duration: 0.3}}, {a + 0.5:.2f});')
+    return f'<div class="ill">{h}</div>', L
+
 def build(spec, out):
     D = spec['duration']; S = spec['sections']; N = spec.get('total', 8); sp = spec.get('split_at', 5.9)
     secs, js = '', []
@@ -64,6 +106,8 @@ def build(spec, out):
         a, b = r['t']; pos = f' style="object-position:{r["pos"]}"' if r.get('pos') else ''   # "pos": "80% 50%" keeps a person at the edge in view
         if r.get('video'):     # a pre-trimmed 1080x1920 clip, muted
             inner = f'<video id="bv{j}" class="clip" src="{e(r["video"])}" data-start="{a:.2f}" data-duration="{b - a:.2f}" data-track-index="{10 + j}" muted playsinline></video>'
+        elif r.get('illus'):   # drawn illustration instead of a photo (user: "nak ilustrasi banyak, bukan video saya bercakap")
+            inner, il = illus(r['illus'], j, a, b); js.extend(il)
         elif r.get('fit') == 'contain':   # whole photo visible, blurred copy fills the rest of the box
             inner = f'<img class="bgfill" src="{e(r["img"])}"/><img class="whole" src="{e(r["img"])}"/>'
         else:
@@ -118,6 +162,23 @@ def build(spec, out):
       .br > img, .br > video {{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }}
       .br > img.bgfill {{ filter: blur(40px) brightness(.55); transform: scale(1.2); }}
       .br > img.whole {{ object-fit: contain; }}
+      .ill {{ position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 35%, #3a2a12, #120d07 75%); display: flex; flex-direction: column;
+             align-items: center; justify-content: center; padding: 120px 70px; text-align: center; }}
+      .ilt {{ font-family: "Play", serif; font-weight: 800; font-size: 104px; line-height: 1.1; color: #fff; }}
+      .iln {{ position: absolute; left: 0; right: 0; bottom: 110px; font-size: 44px; font-style: italic; color: #e9dcc0; opacity: 0; }}
+      .ibars {{ display: flex; align-items: flex-end; justify-content: center; gap: 90px; height: 1180px; margin-top: 40px; }}
+      .ib {{ display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 330px; }}
+      .ibb {{ width: 100%; border-radius: 26px 26px 0 0; transform-origin: 50% 100%; background: linear-gradient(180deg, #FFE7A0, #F2C14E 55%, #C98E22);
+             box-shadow: 0 0 60px rgba(242,193,78,.35); }}
+      .ibv {{ font-size: 76px; font-weight: 900; color: #F2C14E; margin-bottom: 22px; white-space: nowrap; }}
+      .ibl {{ font-size: 60px; font-weight: 800; color: #fff; margin-top: 24px; }}
+      .icn {{ font-size: 150px; font-weight: 900; color: #F2C14E; line-height: 1; margin-top: 60px; white-space: nowrap; text-shadow: 0 0 60px rgba(242,193,78,.4); }}
+      .icp {{ font-size: 84px; margin-right: 14px; }}
+      .ics {{ font-size: 76px; font-weight: 800; margin-top: 50px; }}
+      .iic {{ margin-bottom: 60px; filter: drop-shadow(0 0 40px rgba(242,193,78,.35)); }}
+      .itgs {{ display: flex; flex-direction: column; gap: 34px; margin-top: 60px; align-items: center; }}
+      .itg {{ font-size: 72px; font-weight: 900; color: #2a1600; padding: 18px 44px; border-radius: 60px; background: linear-gradient(180deg, #FFE7A0, #F2C14E 60%, #D49B2A); }}
+      .itg.st {{ background: rgba(255,255,255,.12); color: #fff; text-decoration: line-through; text-decoration-color: #ff5a4e; text-decoration-thickness: 8px; }}
       #frame {{ position: absolute; left: {BOX["x"] - 6}px; top: {BOX["y"] - 6}px; width: {bw + 12}px; height: {bh + 12}px; border-radius: 44px; opacity: 0;
                border: 4px solid #E3B758; box-shadow: 0 0 0 8px rgba(227,183,88,.18), 0 24px 60px rgba(0,0,0,.6); pointer-events: none; }}
       #panel {{ position: absolute; left: {PANEL["x"]}px; top: {PANEL["y"]}px; width: {PANEL["w"]}px; height: {PANEL["h"]}px; border-radius: 34px; opacity: 0;

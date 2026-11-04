@@ -27,3 +27,10 @@ Skrip: `scripts/sebelah_hf.py` (HyperFrames). Contoh lengkap: `references/sebela
   (atau mana-mana warna CSS). Panel tulisan & kotak sari kata kekal gelap supaya kontras. Contoh: `build/hf/r8/spec.json`.
 - Bahan pengguna terbaik (Rakaman8): klip selfie angkat 1 kg sebelah tangan (hook skrin penuh, perlahankan `setpts=1.36*PTS`
   supaya jongkong kekal dalam bingkai) + klip angkat jongkong dari dulang merah; gambar rumah untuk ayat "rumah banglo".
+- **Ilustrasi dalam petak kiri** (pengguna, Rakaman8: "nak ilustrasi banyak ditayang, bukan video saya bercakap"):
+  broll `{"t":[a,b],"illus":{...}}` dengan `kind`:
+  - `bars`: `title`, `bars` `[[label, nilai, teks]]`, `note`;
+  - `count`: `title`, `prefix`, `to`, `sub`, `note`;
+  - `icon`: `icon` `shield|house`, `title`, `tags` `[["x"|"", teks]]`; "x" = coret.
+
+  Isi setiap jurang bercakap > 2 s dengan gambar / klip / ilustrasi. Tandakan "Anggaran" pada angka sendiri.
