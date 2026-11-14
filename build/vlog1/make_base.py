@@ -15,14 +15,22 @@ SEGS = [   # v2 (pengguna): semua bunyi dibisukan; babak group & restoran penuh 
     (47.0, 52.6, 1.2, 0, ''),         # brainstorm bisnes
     (53.3, 65.95, 1.2, 0, ''),        # President G100 berucap + hadirin
     (65.95, 75.6, 1.0, 0, ''),        # sesi fizikal bersama achievers: penuh, kelajuan asal (pengguna: jangan potong)
+    ('img', 'build/vlog1/foto_achievers.jpg', 3.5),   # gambar bersama achievers (pengguna)
     (75.7, 83.0, 1.6, 0, ''),         # The Exchange TRX
     (88.75, 95.75, 1.3, 0, ''),       # lunch
     (84.6, 88.6, 1.0, 0, ''),         # menara, kad penutup
 ]
 os.makedirs(TMP, exist_ok=True); os.makedirs(os.path.dirname(OUT), exist_ok=True)
 parts, t, marks = [], 0.0, []
-for i, (a, b, sp, g, vf) in enumerate(SEGS):
+for i, seg in enumerate(SEGS):
     p = f'{TMP}/s{i:02d}.mov'
+    if seg[0] == 'img':   # still photo: slow push-in, silent
+        _, img, d = seg; n = int(d * 30)
+        subprocess.run(['ffmpeg', '-y', '-v', 'error', '-loop', '1', '-i', img, '-f', 'lavfi', '-i', 'anullsrc=r=48000:cl=stereo', '-t', str(d),
+                        '-filter_complex', f"[0:v]scale=2160:3840:force_original_aspect_ratio=increase,crop=2160:3840,zoompan=z='1+0.06*on/{n}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=1080x1920:fps=30,format=yuv420p[v]",
+                        '-map', '[v]', '-map', '1:a', '-c:v', 'libx264', '-crf', '16', '-g', '30', '-c:a', 'pcm_s16le', p], check=True)
+        marks.append((round(t, 3), round(t + d, 3))); t += d; parts.append(p); continue
+    a, b, sp, g, vf = seg
     v = (vf + ',' if vf else '') + f'setpts=PTS/{sp},fps=30,format=yuv420p'
     at = f'atempo={sp}' if sp != 1.0 else 'anull'
     subprocess.run(['ffmpeg', '-y', '-v', 'error', '-ss', str(a), '-t', str(b - a), '-i', SRC,
