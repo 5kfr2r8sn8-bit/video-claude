@@ -13,8 +13,8 @@ SEGS = [   # v2 (pengguna): semua bunyi dibisukan; babak group & restoran penuh 
     (34.6, 42.3, 1.5, 0, ''),         # lif
     (42.5, 46.5, 1.0, 0, ''),         # G100 Academy
     (47.0, 52.6, 1.2, 0, ''),         # brainstorm bisnes
-    (53.3, 61.0, 1.2, 0, ''),         # President G100 berucap
-    (65.95, 75.55, 1.3, 0, ''),       # sesi fizikal bersama achievers
+    (53.3, 65.95, 1.2, 0, ''),        # President G100 berucap + hadirin
+    (65.95, 75.6, 1.0, 0, ''),        # sesi fizikal bersama achievers: penuh, kelajuan asal (pengguna: jangan potong)
     (75.7, 83.0, 1.6, 0, ''),         # The Exchange TRX
     (88.75, 95.75, 1.3, 0, ''),       # lunch
     (84.6, 88.6, 1.0, 0, ''),         # menara, kad penutup

@@ -1,15 +1,85 @@
 {
- "video": "assets/base.mp4", "duration": 57.4, "silent": true,
- "title": {"t": [0.15, 2.0], "big": "a day in my life", "small": "USTAZAH & PGBO"},
+ "video": "assets/base.mp4",
+ "duration": 63.81,
+ "silent": true,
+ "title": {
+  "t": [
+   0.15,
+   2.0
+  ],
+  "big": "a day in my life",
+  "small": "USTAZAH & PGBO"
+ },
  "labels": [
-  {"t": [2.1, 7.9], "text": "Pagi • masuk kerja di sekolah 🏫", "sub": "Saya seorang ustazah"},
-  {"t": [8.05, 10.4], "text": "Tasmik pelajar 📖"},
-  {"t": [10.55, 15.7], "text": "Selesai tasmik, naik Grab 🚗", "sub": "ke Menara Public Gold, Jalan Tun Razak"},
-  {"t": [15.85, 24.85], "text": "Hadir *NDO fizikal* 🏢", "sub": "sebagai dealer aktif Public Gold"},
-  {"t": [25.0, 29.5], "text": "Brainstorm tentang bisnes 💡"},
-  {"t": [29.7, 35.95], "text": "President *G100* berucap 🎤"},
-  {"t": [36.1, 43.35], "text": "Sesi fizikal bersama *achievers* 🏆"},
-  {"t": [43.5, 53.3], "text": "Lunch di *TRX* 🍽️"}
+  {
+   "t": [
+    2.1,
+    7.9
+   ],
+   "text": "Pagi • masuk kerja di sekolah 🏫",
+   "sub": "Saya seorang ustazah"
+  },
+  {
+   "t": [
+    8.05,
+    10.4
+   ],
+   "text": "Tasmik pelajar 📖"
+  },
+  {
+   "t": [
+    10.55,
+    15.7
+   ],
+   "text": "Selesai tasmik, naik Grab 🚗",
+   "sub": "ke Menara Public Gold, Jalan Tun Razak"
+  },
+  {
+   "t": [
+    15.85,
+    24.85
+   ],
+   "text": "Hadir *NDO fizikal* 🏢",
+   "sub": "sebagai dealer aktif Public Gold"
+  },
+  {
+   "t": [
+    25.0,
+    29.5
+   ],
+   "text": "Brainstorm tentang bisnes 💡"
+  },
+  {
+   "t": [
+    29.7,
+    40.1
+   ],
+   "text": "President *G100* berucap 🎤"
+  },
+  {
+   "t": [
+    40.25,
+    49.75
+   ],
+   "text": "Sesi fizikal bersama *achievers* 🏆"
+  },
+  {
+   "t": [
+    49.9,
+    59.7
+   ],
+   "text": "Lunch di *TRX* 🍽️"
+  }
  ],
- "end": {"t": [53.4, 57.4], "lines": ["Itulah rutin *bulanan* saya", "sebagai PGBO, Public Gold Business Owner ✨"], "pill": "Follow untuk vlog seterusnya"}
+ "end": {
+  "t": [
+   59.81,
+   63.81
+  ],
+  "lines": [
+   "Itulah rutin *bulanan* saya",
+   "sebagai PGBO, Public Gold Business Owner ✨"
+  ],
+  "pill": "Follow untuk vlog seterusnya"
+ }
 }
