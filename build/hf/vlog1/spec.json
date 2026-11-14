@@ -1,22 +1,15 @@
 {
- "video": "assets/base.mp4", "duration": 48.36, "music_db": -20,
- "title": {"t": [0.15, 2.0], "big": "a day in my life", "small": "DEALER PUBLIC GOLD"},
+ "video": "assets/base.mp4", "duration": 57.4, "silent": true,
+ "title": {"t": [0.15, 2.0], "big": "a day in my life", "small": "USTAZAH & PGBO"},
  "labels": [
-  {"t": [2.1, 7.1], "text": "Pagi • hantar anak mengaji 📖"},
-  {"t": [7.3, 12.4], "text": "On the way ke *KL* 🚗"},
-  {"t": [12.6, 17.5], "text": "Naik office ⬆️"},
-  {"t": [21.75, 26.2], "text": "Settle kerja & meeting 💻"},
-  {"t": [26.4, 31.4], "text": "Sesi perkongsian *G100* 🎤"},
-  {"t": [34.6, 37.9], "text": "Bincang dalam group 👥"},
-  {"t": [38.0, 44.3], "text": "Lunch break di *TRX* 🍽️"}
+  {"t": [2.1, 7.9], "text": "Pagi • masuk kerja di sekolah 🏫", "sub": "Saya seorang ustazah"},
+  {"t": [8.05, 10.4], "text": "Tasmik pelajar 📖"},
+  {"t": [10.55, 15.7], "text": "Selesai tasmik, naik Grab 🚗", "sub": "ke Menara Public Gold, Jalan Tun Razak"},
+  {"t": [15.85, 24.85], "text": "Hadir *NDO fizikal* 🏢", "sub": "sebagai dealer aktif Public Gold"},
+  {"t": [25.0, 29.5], "text": "Brainstorm tentang bisnes 💡"},
+  {"t": [29.7, 35.95], "text": "President *G100* berucap 🎤"},
+  {"t": [36.1, 43.35], "text": "Sesi fizikal bersama *achievers* 🏆"},
+  {"t": [43.5, 53.3], "text": "Lunch di *TRX* 🍽️"}
  ],
- "captions": [
-  {"t": [26.39, 27.81], "text": "Ini adalah ruang dan *peluang*"},
-  {"t": [27.81, 29.37], "text": "untuk kita nak rapatkan"},
-  {"t": [29.37, 31.45], "text": "*GAP of knowledge*"},
-  {"t": [31.58, 32.94], "text": "Sekejap lagi tuan puan akan"},
-  {"t": [32.94, 34.5], "text": "dipecah-pecahkan ikut *group*"}
- ],
- "end": {"t": [44.36, 48.36], "lines": ["Penat, tapi *berbaloi*", "Sabar & konsisten menabung emas ✨"], "pill": "Follow untuk vlog seterusnya"},
- "cuts": [2.0, 5.2, 7.2, 12.51, 17.647, 21.647, 26.322, 34.555, 37.955, 42.524, 44.357]
+ "end": {"t": [53.4, 57.4], "lines": ["Itulah rutin *bulanan* saya", "sebagai PGBO, Public Gold Business Owner ✨"], "pill": "Follow untuk vlog seterusnya"}
 }

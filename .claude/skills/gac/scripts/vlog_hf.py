@@ -7,7 +7,7 @@ spec = {
   "labels": [{"t": [a, b], "text": "Pagi • hantar anak mengaji 📖"}],          # top pill, one per activity
   "captions": [{"t": [a, b], "text": "Ini adalah ruang dan *peluang*"}],      # speech only; *gold* words
   "end": {"t": [a, b], "lines": ["Penat, tapi *berbaloi*", "Sabar & konsisten menabung emas"], "pill": "Follow untuk vlog seterusnya"},
-  "cuts": [t, ...], "music_db": -20
+  "cuts": [t, ...], "music_db": -20, "silent": false   # silent: no sound at all; labels may have "sub"
 }"""
 import json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -26,7 +26,8 @@ def build(spec, out):
         ev += [(a, 'shimmer', -6)]
     for i, L in enumerate(spec.get('labels', [])):
         a, b = L['t']
-        html += f'<div class="lab" id="l{i}"><i></i><span>{gold(L["text"])}</span></div>'
+        sub = f'<small>{gold(L["sub"])}</small>' if L.get('sub') else ''
+        html += f'<div class="lab" id="l{i}"><i></i><span>{gold(L["text"])}{sub}</span></div>'
         js += [f'tl.fromTo("#l{i}", {{opacity: 0, y: -24, scale: 0.92}}, {{opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(2)"}}, {a:.2f});',
                f'tl.fromTo("#l{i} i", {{scale: 0}}, {{scale: 1, duration: 0.3, ease: "back.out(3)"}}, {a + 0.25:.2f});',
                f'tl.to("#l{i}", {{opacity: 0, y: -16, duration: 0.3}}, {b - 0.3:.2f});']
@@ -48,7 +49,10 @@ def build(spec, out):
             js.append(f'tl.fromTo("#end .pill", {{opacity: 0, scale: 0.7}}, {{opacity: 1, scale: 1, duration: 0.45, ease: "back.out(2.5)"}}, {a + 0.4 + len(E["lines"]) * 0.6:.2f});')
         ev += [(a + 0.3, 'shimmer', -6)]
     ev += [(t - 0.12, 'whoosh', -12) for t in spec.get('cuts', [])]
-    sfx.render_track(ev, D, os.path.join(out, 'assets', 'sfx.wav'), gain_db=-10, music_db=spec.get('music_db', -20))
+    silent = spec.get('silent')   # user: "mute kan semua sound" (she adds a TikTok sound herself)
+    if not silent: sfx.render_track(ev, D, os.path.join(out, 'assets', 'sfx.wav'), gain_db=-10, music_db=spec.get('music_db', -20))
+    vid_audio = ' muted' if silent else ' data-has-audio="true"'
+    sfx_el = '' if silent else f'<audio id="sfx" class="clip" src="assets/sfx.wav" data-start="0" data-duration="{D:.2f}" data-track-index="1"></audio>'
     doc = f'''<!doctype html>
 <html lang="ms">
   <head>
@@ -68,7 +72,8 @@ def build(spec, out):
              padding: 20px 34px 22px 26px; border-radius: 60px; background: rgba(255,255,255,.88); color: #2a1d0c; font-size: 42px; font-weight: 800;
              box-shadow: 0 14px 40px rgba(0,0,0,.28); opacity: 0; max-width: 820px; }}
       .lab i {{ width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(180deg, #FFE7A0, #D49B2A); flex: none; display: block; }}
-      .lab span {{ overflow: hidden; text-overflow: ellipsis; }}
+      .lab span {{ display: block; }}
+      .lab small {{ display: block; font-size: 30px; font-weight: 700; color: #6b5a3e; margin-top: 4px; }}
       .g {{ color: #C8901F; }}
       .cap {{ position: absolute; left: 130px; width: 820px; top: 1180px; text-align: center; font-size: 50px; font-weight: 800; line-height: 1.2; opacity: 0; }}
       .cap span {{ background: rgba(14,11,8,.72); padding: 8px 24px 12px; border-radius: 18px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }}
@@ -84,8 +89,8 @@ def build(spec, out):
   </head>
   <body>
     <div id="root" data-composition-id="main" data-start="0" data-duration="{D:.2f}" data-width="1080" data-height="1920">
-      <video id="vid" class="clip" src="{e(spec["video"])}" data-start="0" data-duration="{D:.2f}" data-track-index="0" data-has-audio="true"></video>
-      <audio id="sfx" class="clip" src="assets/sfx.wav" data-start="0" data-duration="{D:.2f}" data-track-index="1"></audio>
+      <video id="vid" class="clip" src="{e(spec["video"])}" data-start="0" data-duration="{D:.2f}" data-track-index="0"{vid_audio}></video>
+      {sfx_el}
       <div id="ui" class="clip" data-start="0" data-duration="{D:.2f}" data-track-index="2" style="position:absolute;inset:0">
         {html}
       </div>

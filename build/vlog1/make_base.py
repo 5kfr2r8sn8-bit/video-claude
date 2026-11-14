@@ -4,20 +4,20 @@ import json, os, subprocess
 SRC = 'rakaman/vlog1.mov'; TMP = 'build/vlog1/segs'; OUT = 'build/hf/vlog1/assets/base.mp4'
 BLUR_NAME = 'split[a][b];[b]crop=432:211:0:826,boxblur=20:2[bb];[a][bb]overlay=0:826'   # anak's name on the Quran
 FOOD = 'crop=594:1056:60:864,scale=1080:1920'   # plate only: background diners (no tudung) cropped out
-SEGS = [
-    (0.3, 2.3, 1.0, 0.25, ''),          # dashboard - title
-    (2.4, 5.6, 1.0, 0.25, ''),          # pagi, sekolah mengaji
-    (13.8, 15.8, 1.0, 0.25, BLUR_NAME), # Al-Quran (nama anak dikaburkan)
-    (23.8, 34.4, 2.0, 0.15, ''),        # perjalanan ke KL
-    (34.6, 42.3, 1.5, 0.2, ''),         # lif
-    (42.5, 46.5, 1.0, 0.25, ''),        # G100 Academy
-    (47.0, 52.6, 1.2, 0.2, ''),         # kerja & meeting
-    (53.1, 58.3, 1.0, 1.0, ''),         # sesi perkongsian (suara)
-    (61.45, 64.45, 1.0, 1.0, ''),       # "...dipecah-pecahkan ikut group"
-    (69.0, 72.4, 1.0, 0.3, ''),         # group (bahagian tanpa wanita tak bertudung)
-    (75.7, 83.0, 1.6, 0.2, ''),         # The Exchange TRX
-    (88.8, 89.9, 0.6, 0.2, FOOD),       # makanan
-    (84.6, 88.6, 1.0, 0.15, ''),        # menara, kad penutup
+SEGS = [   # v2 (pengguna): semua bunyi dibisukan; babak group & restoran penuh dibenarkan
+    (0.3, 2.3, 1.0, 0, ''),           # dashboard - tajuk
+    (2.4, 5.6, 1.0, 0, ''),           # pagi: pergi sekolah, masuk kerja
+    (8.7, 11.5, 1.0, 0, ''),          # sekolah
+    (13.8, 15.8, 0.8, 0, BLUR_NAME),  # tasmik pelajar (nama pelajar dikaburkan)
+    (23.8, 34.4, 2.0, 0, ''),         # Grab ke Menara Public Gold
+    (34.6, 42.3, 1.5, 0, ''),         # lif
+    (42.5, 46.5, 1.0, 0, ''),         # G100 Academy
+    (47.0, 52.6, 1.2, 0, ''),         # brainstorm bisnes
+    (53.3, 61.0, 1.2, 0, ''),         # President G100 berucap
+    (65.95, 75.55, 1.3, 0, ''),       # sesi fizikal bersama achievers
+    (75.7, 83.0, 1.6, 0, ''),         # The Exchange TRX
+    (88.75, 95.75, 1.3, 0, ''),       # lunch
+    (84.6, 88.6, 1.0, 0, ''),         # menara, kad penutup
 ]
 os.makedirs(TMP, exist_ok=True); os.makedirs(os.path.dirname(OUT), exist_ok=True)
 parts, t, marks = [], 0.0, []
