@@ -1,6 +1,6 @@
 {
  "video": "assets/base.mp4",
- "duration": 69.96,
+ "duration": 57.82,
  "silent": true,
  "title": {
   "t": [
@@ -14,74 +14,74 @@
   {
    "t": [
     2.1,
-    7.9
+    6.5
    ],
    "text": "Pagi • masuk kerja di sekolah 🏫",
    "sub": "Saya seorang ustazah"
   },
   {
    "t": [
-    8.05,
-    10.4
+    6.65,
+    9.0
    ],
    "text": "Tasmik pelajar 📖"
   },
   {
    "t": [
-    10.55,
-    15.7
+    9.15,
+    12.55
    ],
    "text": "Selesai tasmik, naik Grab 🚗",
    "sub": "ke Menara Public Gold, Jalan Tun Razak"
   },
   {
    "t": [
-    15.85,
-    24.85
+    12.7,
+    18.85
    ],
    "text": "Hadir *NDO fizikal* 🏢",
    "sub": "sebagai dealer aktif Public Gold"
   },
   {
    "t": [
-    25.0,
-    29.5
+    19.0,
+    22.6
    ],
    "text": "Brainstorm tentang bisnes 💡"
   },
   {
    "t": [
-    29.7,
-    40.1
+    22.75,
+    31.0
    ],
    "text": "President *G100* berucap 🎤"
   },
   {
    "t": [
-    40.25,
-    49.75
+    31.2,
+    40.7
    ],
    "text": "Sesi fizikal bersama *achievers* 🏆"
   },
   {
    "t": [
-    49.95,
-    53.25
+    40.85,
+    43.7
    ],
    "text": "Bergambar bersama *achievers* 📸"
   },
   {
    "t": [
-    53.4,
-    63.2
+    43.85,
+    51.75
    ],
    "text": "Lunch di *TRX* 🍽️"
   }
  ],
  "end": {
   "t": [
-   63.31,
-   69.97
+   51.83,
+   57.82
   ],
   "lines": [
    "Itulah rutin *bulanan* saya",
