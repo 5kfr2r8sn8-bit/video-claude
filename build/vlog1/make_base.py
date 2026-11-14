@@ -18,7 +18,7 @@ SEGS = [   # v2 (pengguna): semua bunyi dibisukan; babak group & restoran penuh 
     ('img', 'build/vlog1/foto_achievers.jpg', 3.5),   # gambar bersama achievers (pengguna)
     (75.7, 83.0, 1.6, 0, ''),         # The Exchange TRX
     (88.75, 95.75, 1.3, 0, ''),       # lunch
-    (84.6, 88.6, 1.0, 0, ''),         # menara, kad penutup
+    (84.6, 88.6, 0.6, 0, ''),         # menara, kad penutup CTA (perlahan, cukup masa membaca)
 ]
 os.makedirs(TMP, exist_ok=True); os.makedirs(os.path.dirname(OUT), exist_ok=True)
 parts, t, marks = [], 0.0, []

@@ -1,6 +1,6 @@
 {
  "video": "assets/base.mp4",
- "duration": 67.31,
+ "duration": 69.96,
  "silent": true,
  "title": {
   "t": [
@@ -81,12 +81,13 @@
  "end": {
   "t": [
    63.31,
-   67.31
+   69.97
   ],
   "lines": [
    "Itulah rutin *bulanan* saya",
-   "sebagai PGBO, Public Gold Business Owner ✨"
+   "sebagai PGBO, Public Gold Business Owner ✨",
+   "Nak mula menabung emas di *Public Gold*?"
   ],
-  "pill": "Follow untuk vlog seterusnya"
+  "pill": "Hubungi saya sekarang! 📲"
  }
 }
