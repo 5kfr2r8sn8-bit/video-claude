@@ -1,0 +1,22 @@
+{
+ "video": "assets/base.mp4", "duration": 48.36, "music_db": -20,
+ "title": {"t": [0.15, 2.0], "big": "a day in my life", "small": "DEALER PUBLIC GOLD"},
+ "labels": [
+  {"t": [2.1, 7.1], "text": "Pagi • hantar anak mengaji 📖"},
+  {"t": [7.3, 12.4], "text": "On the way ke *KL* 🚗"},
+  {"t": [12.6, 17.5], "text": "Naik office ⬆️"},
+  {"t": [21.75, 26.2], "text": "Settle kerja & meeting 💻"},
+  {"t": [26.4, 31.4], "text": "Sesi perkongsian *G100* 🎤"},
+  {"t": [34.6, 37.9], "text": "Bincang dalam group 👥"},
+  {"t": [38.0, 44.3], "text": "Lunch break di *TRX* 🍽️"}
+ ],
+ "captions": [
+  {"t": [26.39, 27.81], "text": "Ini adalah ruang dan *peluang*"},
+  {"t": [27.81, 29.37], "text": "untuk kita nak rapatkan"},
+  {"t": [29.37, 31.45], "text": "*GAP of knowledge*"},
+  {"t": [31.58, 32.94], "text": "Sekejap lagi tuan puan akan"},
+  {"t": [32.94, 34.5], "text": "dipecah-pecahkan ikut *group*"}
+ ],
+ "end": {"t": [44.36, 48.36], "lines": ["Penat, tapi *berbaloi*", "Sabar & konsisten menabung emas ✨"], "pill": "Follow untuk vlog seterusnya"},
+ "cuts": [2.0, 5.2, 7.2, 12.51, 17.647, 21.647, 26.322, 34.555, 37.955, 42.524, 44.357]
+}
