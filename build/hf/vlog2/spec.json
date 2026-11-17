@@ -1,0 +1,10 @@
+{
+ "video": "assets/base.mp4", "duration": 17.42, "music_db": -20,
+ "title": {"t": [0.15, 3.3], "big": "musim exam dah tiba", "small": "USTAZAH MODE ON"},
+ "labels": [
+  {"t": [3.5, 7.8], "text": "Fotostat bahan exam 🖨️"},
+  {"t": [7.95, 14.0], "text": "Siapkan kertas soalan ✍️", "sub": "untuk pelajar-pelajar saya"}
+ ],
+ "end": {"t": [14.11, 17.42], "lines": ["Doakan pelajar saya *cemerlang* 🤲", "Semoga dipermudahkan urusan mereka 🤍"], "pill": "Follow untuk vlog seterusnya"},
+ "cuts": [3.4, 7.867, 14.109]
+}

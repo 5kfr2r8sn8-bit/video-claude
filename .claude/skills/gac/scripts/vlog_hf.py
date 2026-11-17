@@ -65,7 +65,8 @@ def build(spec, out):
       html, body {{ width: 1080px; height: 1920px; overflow: hidden; background: #000; }}
       #root {{ position: relative; width: 1080px; height: 1920px; overflow: hidden; font-family: "Jak", sans-serif; color: #fff; }}
       #vid {{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }}
-      #title {{ position: absolute; left: 0; right: 0; top: 700px; text-align: center; text-shadow: 0 6px 30px rgba(0,0,0,.55); }}
+      #title {{ position: absolute; left: 0; right: 0; top: 640px; padding: 60px 0 70px; text-align: center; text-shadow: 0 4px 24px rgba(0,0,0,.7), 0 0 4px rgba(0,0,0,.35);
+                background: radial-gradient(ellipse 70% 50% at 50% 50%, rgba(0,0,0,.38), rgba(0,0,0,0)); }}
       #title .big {{ font-family: "InstSerifItalic"; font-size: 150px; line-height: 1; opacity: 0; }}
       #title .small {{ font-size: 36px; font-weight: 800; letter-spacing: .32em; color: #F2C14E; margin-top: 26px; opacity: 0; }}
       .lab {{ position: absolute; top: 300px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 18px; white-space: nowrap;
