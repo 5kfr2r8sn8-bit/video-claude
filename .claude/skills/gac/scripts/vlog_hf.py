@@ -7,6 +7,7 @@ spec = {
   "labels": [{"t": [a, b], "text": "Pagi • hantar anak mengaji 📖"}],          # top pill, one per activity
   "captions": [{"t": [a, b], "text": "Ini adalah ruang dan *peluang*"}],      # speech only; *gold* words
   "end": {"t": [a, b], "lines": ["Penat, tapi *berbaloi*", "Sabar & konsisten menabung emas"], "pill": "Follow untuk vlog seterusnya"},
+  "cards": [{"t": [a, b], "badge": "G", "badge_small": "FLOOR", "kicker": "GROUND FLOOR", "title": "Gold ATM", "items": ["..."], "at": [t]}],
   "cuts": [t, ...], "music_db": -20, "silent": false   # silent: no sound at all; labels may have "sub"
 }"""
 import json, os, sys
@@ -19,7 +20,8 @@ def build(spec, out):
     T = spec.get('title')
     if T:
         a, b = T['t']
-        html += f'<div id="title"><div class="big">{e(T["big"])}</div><div class="small">{e(T.get("small", ""))}</div></div>'
+        tstyle = f' style="top:{T["top"]}px"' if T.get('top') else ''
+        html += f'<div id="title"{tstyle}><div class="big">{e(T["big"])}</div><div class="small">{e(T.get("small", ""))}</div></div>'
         js += [f'tl.fromTo("#title .big", {{opacity: 0, y: 40, filter: "blur(12px)"}}, {{opacity: 1, y: 0, filter: "blur(0px)", duration: 0.7, ease: "power3.out"}}, {a:.2f});',
                f'tl.fromTo("#title .small", {{opacity: 0, y: 20}}, {{opacity: 1, y: 0, duration: 0.5}}, {a + 0.35:.2f});',
                f'tl.to("#title", {{opacity: 0, y: -30, duration: 0.35}}, {b - 0.35:.2f});']
@@ -32,6 +34,20 @@ def build(spec, out):
                f'tl.fromTo("#l{i} i", {{scale: 0}}, {{scale: 1, duration: 0.3, ease: "back.out(3)"}}, {a + 0.25:.2f});',
                f'tl.to("#l{i}", {{opacity: 0, y: -16, duration: 0.3}}, {b - 0.3:.2f});']
         ev += [(a, 'pop', -8)]
+    CHECK = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#E3B758"/><path d="M6.5 12.5l3.6 3.6L17.6 8.6" fill="none" stroke="#2a1600" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    for i, K in enumerate(spec.get('cards', [])):   # floor/step info card: badge + kicker + title, items pop in at their times
+        a, b = K['t']; at = K.get('at', [])
+        items = ''.join(f'<div class="it">{CHECK}<span>{gold(t)}</span></div>' for t in K.get('items', []))
+        html += (f'<div class="card" id="k{i}"><div class="kh"><div class="badge"><small>{e(K.get("badge_small", ""))}</small><b>{e(K["badge"])}</b></div>'
+                 f'<div class="kt"><div class="kk">{e(K.get("kicker", ""))}</div><div class="ktt">{gold(K["title"])}</div></div></div><div class="ki">{items}</div></div>')
+        js += [f'tl.fromTo("#k{i}", {{opacity: 0, y: -30, scale: 0.95}}, {{opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.8)"}}, {a:.2f});',
+               f'tl.fromTo("#k{i} .badge", {{scale: 0.3, rotation: -40}}, {{scale: 1, rotation: 0, duration: 0.55, ease: "back.out(2.5)"}}, {a + 0.15:.2f});',
+               f'tl.to("#k{i}", {{opacity: 0, y: -20, duration: 0.3}}, {b - 0.3:.2f});']
+        ev += [(a, 'swoosh', -6)]
+        for j in range(len(K.get('items', []))):
+            t0 = at[j] if j < len(at) else a + 0.7 + j * 0.8
+            js.append(f'tl.fromTo("#k{i} .it:nth-child({j + 1})", {{opacity: 0, x: 40}}, {{opacity: 1, x: 0, duration: 0.35, ease: "back.out(2)"}}, {t0:.2f});')
+            ev.append((t0, 'pop', -8))
     for i, C in enumerate(spec.get('captions', [])):
         a, b = C['t']
         html += f'<div class="cap" id="c{i}"><span>{gold(C["text"])}</span></div>'
@@ -76,6 +92,18 @@ def build(spec, out):
       .lab span {{ display: block; }}
       .lab small {{ display: block; font-size: 30px; font-weight: 700; color: #6b5a3e; margin-top: 4px; }}
       .g {{ color: #C8901F; }}
+      .card {{ position: absolute; left: 130px; width: 820px; top: 250px; padding: 24px 30px 28px; border-radius: 36px; background: rgba(255,255,255,.93);
+              box-shadow: 0 18px 50px rgba(0,0,0,.3); opacity: 0; color: #2a1d0c; }}
+      .kh {{ display: flex; align-items: center; gap: 24px; }}
+      .badge {{ width: 112px; height: 112px; flex: none; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+               background: linear-gradient(180deg, #FFE7A0, #F2C14E 55%, #C98E22); box-shadow: inset 0 2px 0 rgba(255,255,255,.6), 0 6px 16px rgba(160,110,20,.4); }}
+      .badge small {{ font-size: 15px; font-weight: 800; letter-spacing: .14em; color: #5a3a08; }}
+      .badge b {{ font-size: 58px; font-weight: 800; line-height: .95; color: #2a1600; }}
+      .kk {{ font-size: 24px; font-weight: 800; letter-spacing: .2em; color: #B8862A; }}
+      .ktt {{ font-size: 50px; font-weight: 800; line-height: 1.08; margin-top: 4px; }}
+      .ki {{ margin-top: 10px; }}
+      .it {{ display: flex; align-items: flex-start; gap: 14px; margin-top: 14px; font-size: 34px; font-weight: 700; line-height: 1.22; color: #3a2a12; opacity: 0; }}
+      .it svg {{ width: 36px; height: 36px; flex: none; margin-top: 2px; }}
       .cap {{ position: absolute; left: 130px; width: 820px; top: 1180px; text-align: center; font-size: 50px; font-weight: 800; line-height: 1.2; opacity: 0; }}
       .cap span {{ background: rgba(14,11,8,.72); padding: 8px 24px 12px; border-radius: 18px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }}
       .cap .g {{ color: #F2C14E; }}
