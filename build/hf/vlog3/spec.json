@@ -1,19 +1,140 @@
 {
- "video": "assets/base.mp4", "duration": 58.49, "music_db": -20,
- "title": {"t": [0.15, 3.4], "big": "one stop centre emas", "small": "BELI • JUAL • SIMPAN • PAJAK", "top": 980},
+ "video": "assets/base.mp4",
+ "duration": 58.36,
+ "music_db": -20,
+ "title": {
+  "t": [
+   0.15,
+   3.4
+  ],
+  "big": "one stop centre emas",
+  "small": "BELI • JUAL • SIMPAN • PAJAK",
+  "top": 980
+ },
  "cards": [
-  {"t": [3.6, 12.5], "badge": "G", "badge_small": "FLOOR", "kicker": "GROUND FLOOR", "title": "*Gold ATM*",
-   "items": ["Keluarkan gold bar & dinar dari akaun GAP", "Boleh *cash & carry*"], "at": [4.6, 7.6]},
-  {"t": [12.7, 18.35], "badge": "1", "badge_small": "TINGKAT", "kicker": "TINGKAT 1", "title": "Kaunter jual & beli emas",
-   "items": ["Jual emas lama, rosak, kemek & patah", "Beli perhiasan *999 & 916*, gold bar & dinar"], "at": [13.6, 15.8]},
-  {"t": [22.9, 25.55], "badge": "1", "badge_small": "TINGKAT", "kicker": "TINGKAT 1", "title": "Kaunter jual & beli emas",
-   "items": ["Keluarkan emas fizikal GAP (dengan appointment)"], "at": [23.2]},
-  {"t": [30.7, 38.45], "badge": "4", "badge_small": "TINGKAT", "kicker": "TINGKAT 4", "title": "*Public Safe*",
-   "items": ["Sewa peti besi, ada *3 saiz*", "Simpan emas, surat & barang berharga"], "at": [31.7, 34.5]},
-  {"t": [43.0, 50.3], "badge": "8", "badge_small": "TINGKAT", "kicker": "TINGKAT 8", "title": "*KDE Ar-Rahnu*",
-   "items": ["Urusan *pajak emas*"], "at": [44.3]}
+  {
+   "t": [
+    3.6,
+    10.87
+   ],
+   "badge": "G",
+   "badge_small": "FLOOR",
+   "kicker": "GROUND FLOOR",
+   "title": "*Gold ATM*",
+   "items": [
+    "Keluarkan gold bar & dinar dari akaun GAP",
+    "Boleh *cash & carry*"
+   ],
+   "at": [
+    4.5,
+    7.0
+   ]
+  },
+  {
+   "t": [
+    11.07,
+    16.7
+   ],
+   "badge": "1",
+   "badge_small": "TINGKAT",
+   "kicker": "TINGKAT 1",
+   "title": "Kaunter jual & beli emas",
+   "items": [
+    "Jual emas lama, rosak, kemek & patah",
+    "Beli perhiasan *999 & 916*, gold bar & dinar"
+   ],
+   "at": [
+    11.9,
+    14.1
+   ]
+  },
+  {
+   "t": [
+    20.9,
+    23.1
+   ],
+   "badge": "1",
+   "badge_small": "TINGKAT",
+   "kicker": "TINGKAT 1",
+   "title": "Kaunter jual & beli emas",
+   "items": [
+    "Keluarkan emas fizikal GAP (dengan appointment)"
+   ],
+   "at": [
+    21.15
+   ]
+  },
+  {
+   "t": [
+    33.7,
+    40.1
+   ],
+   "badge": "4",
+   "badge_small": "TINGKAT",
+   "kicker": "TINGKAT 4",
+   "title": "*Public Safe*",
+   "items": [
+    "Sewa peti besi, ada *3 saiz*",
+    "Simpan emas, surat & barang berharga"
+   ],
+   "at": [
+    34.5,
+    36.8
+   ]
+  },
+  {
+   "t": [
+    44.3,
+    50.17
+   ],
+   "badge": "8",
+   "badge_small": "TINGKAT",
+   "kicker": "TINGKAT 8",
+   "title": "*KDE Ar-Rahnu*",
+   "items": [
+    "Urusan *pajak emas*"
+   ],
+   "at": [
+    45.4
+   ]
+  }
  ],
- "labels": [{"t": [25.75, 30.55], "text": "Cuci mata emas perhiasan 💍"}],
- "end": {"t": [52.6, 58.49], "lines": ["Beli • Jual • *Simpan* • Pajak", "Semua dalam *1 bangunan* ✨", "Inilah one stop centre yang tuan puan perlu tahu"], "pill": "Nak menabung emas? Hubungi saya sekarang! 📲"},
- "cuts": [3.5, 12.6, 18.433, 20.633, 22.833, 25.633, 30.633, 38.533, 40.733, 42.933, 50.4, 52.6]
+ "labels": [
+  {
+   "t": [
+    28.7,
+    33.5
+   ],
+   "text": "Cuci mata emas perhiasan 💍"
+  }
+ ],
+ "end": {
+  "t": [
+   52.47,
+   58.36
+  ],
+  "lines": [
+   "Beli • Jual • *Simpan* • Pajak",
+   "Semua dalam *1 bangunan* ✨",
+   "Inilah one stop centre yang tuan puan perlu tahu"
+  ],
+  "pill": "Nak menabung emas? Hubungi saya sekarang! 📲"
+ },
+ "cuts": [
+  3.5,
+  10.967,
+  16.8,
+  18.8,
+  20.8,
+  23.2,
+  25.0,
+  26.8,
+  28.6,
+  33.6,
+  40.2,
+  42.2,
+  44.2,
+  50.267,
+  52.467
+ ]
 }

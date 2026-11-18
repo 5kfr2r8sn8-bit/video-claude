@@ -4,18 +4,21 @@ import json, os, subprocess
 D = 'rakaman/vlog3'; TMP = 'build/vlog3/segs'; OUT = 'build/hf/vlog3/assets/base.mp4'
 V = lambda n: f'{D}/{n}.mov'
 I = lambda n: f'{D}/{n}.jpeg'
-SEGS = [
+SEGS = [   # v3 (pengguna): guna SEMUA gambar yang diberi
     (V('IMG_0027'), 0.0, 3.5, 1.0),        # hook: lobi Public Gold ATM
-    (V('IMG_0027'), 3.5, 19.9, 1.8),       # Ground floor: Gold ATM
+    (V('IMG_0027'), 3.5, 19.9, 2.2),       # Ground floor: Gold ATM
     (V('IMG_9993'), 0.0, 7.6, 1.3),        # Tingkat 1: kaunter
-    ('img', I('IMG_0814'), 2.2, 'cover'),  # gold bar & dinar
-    ('img', I('IMG_0809'), 2.2, 'cover'),  # dulang perhiasan
-    ('img', I('IMG_0792'), 2.8, 'cover'),  # cincin (gambar gelang dibuang: gelang di bahagian atas, bertembung kad)
+    ('img', I('IMG_0814'), 2.0, 'cover'),  # gold bar & dinar
+    ('img', I('IMG_0809'), 2.0, 'cover'),  # dulang perhiasan
+    ('img', I('IMG_0792'), 2.4, 'cover'),  # cincin
+    ('img', I('IMG_0793'), 1.8, 'cover'),  # cincin 2
+    ('img', I('IMG_0796'), 1.8, 'cover'),  # gelang
+    ('img', I('IMG_0797'), 1.8, 'cover'),  # gelang 2
     (V('IMG_0845'), 41.0, 45.0, 0.8),      # cuci mata perhiasan: bahagian hujung (pengguna: lebih cantik, cahaya ok)
-    (V('IMG_0846'), 0.0, 15.8, 2.0),       # Tingkat 4: Public Safe
-    ('img', I('IMG_0843'), 2.2, 'contain'),  # 3 saiz peti besi
-    ('img', I('IMG_0847'), 2.2, 'cover'),  # poster Public Safe
-    (V('IMG_0849'), 0.0, 9.7, 1.3),        # Tingkat 8: KDE Ar-Rahnu
+    (V('IMG_0846'), 0.0, 15.8, 2.4),       # Tingkat 4: Public Safe
+    ('img', I('IMG_0843'), 2.0, 'contain'),  # 3 saiz peti besi
+    ('img', I('IMG_0847'), 2.0, 'cover'),  # poster Public Safe
+    (V('IMG_0849'), 0.0, 9.7, 1.6),        # Tingkat 8: KDE Ar-Rahnu
     ('img', I('IMG_0853'), 2.2, 'cover'),  # di Ar-Rahnu
     (V('IMG_0027'), 14.0, 19.9, 1.0),      # penutup: lobi
 ]
