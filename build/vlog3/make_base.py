@@ -11,7 +11,7 @@ SEGS = [
     ('img', I('IMG_0814'), 2.2, 'cover'),  # gold bar & dinar
     ('img', I('IMG_0809'), 2.2, 'cover'),  # dulang perhiasan
     ('img', I('IMG_0792'), 2.8, 'cover'),  # cincin (gambar gelang dibuang: gelang di bahagian atas, bertembung kad)
-    (V('IMG_0845'), 4.0, 12.0, 1.6),       # cuci mata perhiasan
+    (V('IMG_0845'), 41.0, 45.0, 0.8),      # cuci mata perhiasan: bahagian hujung (pengguna: lebih cantik, cahaya ok)
     (V('IMG_0846'), 0.0, 15.8, 2.0),       # Tingkat 4: Public Safe
     ('img', I('IMG_0843'), 2.2, 'contain'),  # 3 saiz peti besi
     ('img', I('IMG_0847'), 2.2, 'cover'),  # poster Public Safe
