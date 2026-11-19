@@ -12,8 +12,8 @@ SEGS = [   # ('v', src, [(in, out, speed), ...]) or ('i', src, dur, effect[, 'co
     ('v', V('IMG_9993'), [(0.0, 3.0, 2.0), (3.0, 5.5, 0.6), (5.5, 7.6, 2.0)]),      # 2 Tingkat 1 kaunter
     ('i', I('IMG_0814'), 2.4, 'punch'),                                           # 3 gold bar & dinar
     ('i', I('IMG_0809'), 2.4, 'zout'),                                            # 4 dulang perhiasan
-    ('i', I('IMG_0792'), 2.6, 'panl'),                                            # 5 cincin (kad: keluar emas fizikal)
-    ('i', I('IMG_0793'), 1.9, 'punch'),                                           # 6 cincin 2
+    ('i', 'build/vlog3/IMG_0792_slim.jpg', 2.6, 'panl'),   # tangan dikuruskan (slim_hand.py)                                            # 5 cincin (kad: keluar emas fizikal)
+    ('i', 'build/vlog3/IMG_0793_slim.jpg', 1.9, 'punch'),  # tangan dikuruskan                                           # 6 cincin 2
     ('i', I('IMG_0796'), 1.9, 'zin'),                                             # 7 gelang
     ('i', I('IMG_0797'), 1.9, 'zout'),                                            # 8 gelang 2
     ('v', V('IMG_0845'), [(41.0, 45.0, 0.6)]),                                    # 9 pameran (slow-mo)
