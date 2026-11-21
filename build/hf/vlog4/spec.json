@@ -1,0 +1,11 @@
+{
+ "video": "assets/base.mp4", "duration": 39.84, "silent": true,
+ "title": {"t": [0.15, 4.3], "big": "hari temuduga", "small": "PELAJAR TAHFIZ", "top": 760},
+ "labels": [
+  {"t": [4.5, 9.95], "text": "Temuduga pelajar *tahfiz* 📋", "sub": "Tahfiz sepenuh masa & akademik"},
+  {"t": [10.1, 16.2], "text": "Taklimat ibu bapa & pelajar 🎤"},
+  {"t": [16.25, 22.5], "text": "Sesi temuduga 📝"},
+  {"t": [22.55, 36.1], "text": "Ujian *hafazan* 📖"}
+ ],
+ "end": {"t": [36.25, 39.84], "lines": ["Selesai! *Alhamdulillah* 🤲", "Semoga semua pelajar dipermudahkan 🤍"], "pill": "Follow untuk vlog seterusnya"}
+}
