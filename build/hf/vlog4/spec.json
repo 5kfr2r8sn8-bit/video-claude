@@ -1,6 +1,6 @@
 {
  "video": "assets/base.mp4", "duration": 39.84, "silent": true,
- "title": {"t": [0.15, 4.3], "big": "hari temuduga", "small": "PELAJAR TAHFIZ", "top": 760},
+ "title": {"t": [0.15, 4.3], "big": "hari temuduga", "small": "PELAJAR TAHFIZ", "top": 300},
  "labels": [
   {"t": [4.5, 9.95], "text": "Temuduga pelajar *tahfiz* 📋", "sub": "Tahfiz sepenuh masa & akademik"},
   {"t": [10.1, 16.2], "text": "Taklimat ibu bapa & pelajar 🎤"},
